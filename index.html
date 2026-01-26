@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ancient DNA Damage Browser</title>
-    <script src="https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-mvp.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -263,12 +262,7 @@
     </div>
 
     <script type="module">
-        const JSDELIVR_BUNDLES = {
-            mvp: {
-                mainModule: 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-mvp.wasm',
-                mainWorker: 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-mvp.worker.js',
-            },
-        };
+        import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
 
         let db, conn;
         let currentSample = null;
@@ -284,11 +278,16 @@
         };
 
         async function initDuckDB() {
+            const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
             const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
-            const worker = new Worker(bundle.mainWorker);
+            const worker_url = URL.createObjectURL(
+                new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
+            );
+            const worker = new Worker(worker_url);
             const logger = new duckdb.ConsoleLogger();
             db = new duckdb.AsyncDuckDB(logger, worker);
             await db.instantiate(bundle.mainModule);
+            URL.revokeObjectURL(worker_url);
             conn = await db.connect();
 
             await db.registerFileURL('meta.parquet', 'meta.parquet', duckdb.DuckDBDataProtocol.HTTP, false);
