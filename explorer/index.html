@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles.css?v=39">
+    <link rel="stylesheet" href="../styles.css?v=40">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
@@ -37,12 +37,16 @@
             <div class="header-actions">
                 <button class="btn btn-ghost" id="compare-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                    Compare
+                    <span>Compare</span>
                 </button>
                 <button class="btn btn-secondary" id="export-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Export
+                    <span>Export</span>
                 </button>
+                <a href="../help.html" class="btn btn-ghost" title="Help & Documentation">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span>Help</span>
+                </a>
             </div>
         </header>
 
@@ -153,10 +157,10 @@
                                     <th data-sort="genus">Genus <span class="sort-icon">↕</span></th>
                                     <th data-sort="family">Family <span class="sort-icon">↕</span></th>
                                     <th data-sort="phylum">Phylum <span class="sort-icon">↕</span></th>
-                                    <th data-sort="damage" class="sorted">Damage <span class="sort-icon">↓</span></th>
-                                    <th data-sort="significance">Signif. <span class="sort-icon">↕</span></th>
-                                    <th data-sort="n_reads">Reads <span class="sort-icon">↕</span></th>
-                                    <th>Status</th>
+                                    <th data-sort="damage" class="sorted" data-tooltip="Estimated proportion of reads showing ancient DNA damage (C→T at 5', G→A at 3'). Higher values indicate stronger evidence for ancient origin.">Damage <span class="sort-icon">↓</span></th>
+                                    <th data-sort="significance" data-tooltip="Number of standard deviations the damage estimate is from zero. Values >3 indicate strong statistical confidence.">Signif. <span class="sort-icon">↕</span></th>
+                                    <th data-sort="n_reads" data-tooltip="Total number of sequencing reads aligned to this reference.">Reads <span class="sort-icon">↕</span></th>
+                                    <th data-tooltip="Classification based on damage level and significance. 'Damaged' indicates authentic ancient DNA patterns.">Status</th>
                                     <th data-sort="reference">Reference <span class="sort-icon">↕</span></th>
                                 </tr>
                             </thead>
@@ -232,6 +236,6 @@
         </div>
     </div>
 
-    <script type="module" src="../js/app.js?v=39"></script>
+    <script type="module" src="../js/app.js?v=40"></script>
 </body>
 </html>

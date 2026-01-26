@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help - KAPK Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=40">
+    <style>
+        html, body {
+            height: auto;
+            overflow: auto;
+        }
+
+        .help-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .help-header {
+            padding: var(--space-lg) var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+
+        .help-header .back-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .help-header .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        .help-header .back-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .help-main {
+            flex: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: var(--space-2xl) var(--space-xl);
+        }
+
+        .help-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
+        }
+
+        .help-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2xl);
+            line-height: 1.6;
+        }
+
+        .help-toc {
+            background: var(--bg-raised);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .help-toc h2 {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            margin-bottom: var(--space-md);
+        }
+
+        .help-toc ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-sm);
+        }
+
+        .help-toc a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .help-toc a:hover {
+            text-decoration: underline;
+        }
+
+        .help-section {
+            margin-bottom: var(--space-2xl);
+            padding-bottom: var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .help-section:last-child {
+            border-bottom: none;
+        }
+
+        .help-section h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .help-section h2 svg {
+            width: 24px;
+            height: 24px;
+            color: var(--accent-primary);
+        }
+
+        .help-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: var(--space-lg) 0 var(--space-sm);
+        }
+
+        .help-section p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: var(--space-md);
+        }
+
+        .help-section ul, .help-section ol {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: var(--space-md);
+            padding-left: var(--space-lg);
+        }
+
+        .help-section li {
+            margin-bottom: var(--space-xs);
+        }
+
+        .help-section code {
+            background: var(--bg-elevated);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            color: var(--damage-5prime);
+        }
+
+        .metric-card {
+            background: var(--bg-raised);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+
+        .metric-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .metric-card .metric-badge {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-elevated);
+            color: var(--text-tertiary);
+        }
+
+        .metric-card p {
+            margin-bottom: var(--space-sm);
+        }
+
+        .metric-card .interpretation {
+            background: var(--bg-base);
+            border-left: 3px solid var(--accent-primary);
+            padding: var(--space-sm) var(--space-md);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .smiley-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xl);
+            padding: var(--space-xl);
+            background: var(--bg-raised);
+            border-radius: var(--radius-lg);
+            margin: var(--space-lg) 0;
+        }
+
+        .smiley-diagram .diagram-side {
+            text-align: center;
+        }
+
+        .smiley-diagram .diagram-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-sm);
+        }
+
+        .smiley-diagram .diagram-value {
+            font-size: 24px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        .smiley-diagram .diagram-value.red { color: var(--damage-5prime); }
+        .smiley-diagram .diagram-value.blue { color: var(--damage-3prime); }
+
+        .smiley-diagram .diagram-arrow {
+            font-size: 24px;
+            color: var(--text-tertiary);
+        }
+
+        .formula {
+            background: var(--bg-elevated);
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-md);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--text-primary);
+            margin: var(--space-md) 0;
+            overflow-x: auto;
+        }
+
+        .status-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-md);
+            margin: var(--space-lg) 0;
+        }
+
+        .status-example {
+            background: var(--bg-raised);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+        }
+
+        .status-example .status-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .status-example .status-badge.damaged {
+            background: rgba(76, 175, 80, 0.15);
+            color: #4caf50;
+        }
+
+        .status-example .status-badge.non-damaged {
+            background: rgba(158, 158, 158, 0.15);
+            color: #9e9e9e;
+        }
+
+        .status-example p {
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .reference-links {
+            background: var(--bg-raised);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+        }
+
+        .reference-links h4 {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            margin-bottom: var(--space-md);
+        }
+
+        .reference-links a {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 14px;
+            padding: var(--space-sm) 0;
+        }
+
+        .reference-links a:hover {
+            text-decoration: underline;
+        }
+
+        .reference-links a svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .help-main {
+                padding: var(--space-lg);
+            }
+
+            .help-title {
+                font-size: 1.5rem;
+            }
+
+            .help-toc ul {
+                grid-template-columns: 1fr;
+            }
+
+            .smiley-diagram {
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+
+            .smiley-diagram .diagram-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="help-page">
+        <header class="help-header">
+            <a href="explorer/" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Back to Explorer
+            </a>
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <div class="logo-text">KAPK <span>Help</span></div>
+            </div>
+        </header>
+
+        <main class="help-main">
+            <h1 class="help-title">Understanding Ancient DNA Damage Analysis</h1>
+            <p class="help-subtitle">
+                This guide explains the key concepts and metrics used in the KAPK Explorer for analyzing
+                ancient DNA damage patterns in metagenomic samples from the Kap København Formation.
+            </p>
+
+            <nav class="help-toc">
+                <h2>Contents</h2>
+                <ul>
+                    <li><a href="#damage">DNA Damage</a></li>
+                    <li><a href="#smiley">The Smiley Plot</a></li>
+                    <li><a href="#significance">Significance</a></li>
+                    <li><a href="#model">Model Parameters</a></li>
+                    <li><a href="#coverage">Coverage Metrics</a></li>
+                    <li><a href="#status">Damage Status</a></li>
+                    <li><a href="#references">References</a></li>
+                </ul>
+            </nav>
+
+            <section class="help-section" id="damage">
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    DNA Damage
+                </h2>
+                <p>
+                    Ancient DNA undergoes characteristic chemical modifications over time. The most diagnostic
+                    pattern is <strong>cytosine deamination</strong>, where cytosine (C) bases are converted to
+                    uracil, which is then read as thymine (T) during sequencing.
+                </p>
+                <p>
+                    This process creates predictable substitution patterns:
+                </p>
+                <div class="smiley-diagram">
+                    <div class="diagram-side">
+                        <div class="diagram-label">5' End</div>
+                        <div class="diagram-value red">C → T</div>
+                    </div>
+                    <div class="diagram-arrow">⟷</div>
+                    <div class="diagram-side">
+                        <div class="diagram-label">3' End</div>
+                        <div class="diagram-value blue">G → A</div>
+                    </div>
+                </div>
+                <p>
+                    The damage is most pronounced at the ends of DNA fragments, decreasing toward the center.
+                    This creates the characteristic "smiley" pattern when plotted. The <strong>damage value</strong>
+                    represents the estimated proportion of damaged reads, typically expressed as a percentage.
+                </p>
+                <div class="metric-card">
+                    <h4>Damage <span class="metric-badge">Primary Metric</span></h4>
+                    <p>
+                        The estimated proportion of reads showing authentic ancient DNA damage patterns.
+                        Higher values indicate stronger evidence for ancient origin.
+                    </p>
+                    <div class="interpretation">
+                        <strong>Interpretation:</strong> Values above 10-15% typically indicate authentic ancient DNA,
+                        though this threshold can vary depending on the organism and preservation conditions.
+                    </div>
+                </div>
+            </section>
+
+            <section class="help-section" id="smiley">
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                        <line x1="9" y1="9" x2="9.01" y2="9"/>
+                        <line x1="15" y1="9" x2="15.01" y2="9"/>
+                    </svg>
+                    The Smiley Plot
+                </h2>
+                <p>
+                    The "smiley plot" visualizes nucleotide substitution frequencies across read positions.
+                    It shows how damage varies from the 5' end (left) through the center to the 3' end (right).
+                </p>
+                <h3>Reading the Plot</h3>
+                <ul>
+                    <li><strong style="color: var(--damage-5prime)">Red line (5' C→T):</strong> Shows C-to-T substitution rate from the 5' end. Authentic ancient DNA shows elevated rates at the fragment end, decaying toward the center.</li>
+                    <li><strong style="color: var(--damage-3prime)">Blue line (3' G→A):</strong> Shows G-to-A substitution rate from the 3' end. This is the complementary damage pattern on the opposite strand.</li>
+                    <li><strong>Faded lines:</strong> Show observed data points.</li>
+                    <li><strong>Solid lines:</strong> Show the fitted model predictions.</li>
+                </ul>
+                <p>
+                    The characteristic "smile" shape—high at both ends, low in the middle—is the hallmark
+                    of authentic ancient DNA damage. Modern contamination typically shows flat patterns.
+                </p>
+            </section>
+
+            <section class="help-section" id="significance">
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    Significance
+                </h2>
+                <p>
+                    The significance metric represents the <strong>number of standard deviations (sigmas)</strong>
+                    that the estimated damage is away from zero. It indicates statistical confidence that
+                    the observed damage is real rather than noise.
+                </p>
+                <div class="metric-card">
+                    <h4>Significance <span class="metric-badge">Statistical</span></h4>
+                    <p>
+                        A Z-score measuring how confidently we can distinguish the damage signal from zero.
+                    </p>
+                    <div class="interpretation">
+                        <strong>Interpretation:</strong>
+                        <ul style="margin: var(--space-sm) 0 0; padding-left: var(--space-md);">
+                            <li><code>&gt; 3</code> — Strong evidence of damage (99.7% confidence)</li>
+                            <li><code>2-3</code> — Moderate evidence (95-99.7% confidence)</li>
+                            <li><code>&lt; 2</code> — Weak or no evidence of damage</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="help-section" id="model">
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    Model Parameters
+                </h2>
+                <p>
+                    The damage model fits an exponential decay function to the observed substitution patterns.
+                    The model estimates four key parameters:
+                </p>
+
+                <div class="metric-card">
+                    <h4>A (Amplitude)</h4>
+                    <p>
+                        The background-independent damage level. Represents the maximum damage rate
+                        at fragment ends, independent of sequencing artifacts.
+                    </p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>q (Decay Rate)</h4>
+                    <p>
+                        Controls how quickly damage decreases from the ends toward the center of fragments.
+                        Higher values mean faster decay (damage concentrated at ends).
+                    </p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>φ (Phi - Concentration)</h4>
+                    <p>
+                        The concentration parameter for the beta-binomial distribution. Controls the
+                        overdispersion in the model—how much variation exists beyond what's expected.
+                    </p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>c (Background)</h4>
+                    <p>
+                        The baseline substitution rate due to sequencing errors or other non-damage sources.
+                        Accounts for noise in the data that's not related to ancient DNA damage.
+                    </p>
+                </div>
+            </section>
+
+            <section class="help-section" id="coverage">
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="3" y1="9" x2="21" y2="9"/>
+                        <line x1="9" y1="21" x2="9" y2="9"/>
+                    </svg>
+                    Coverage Metrics
+                </h2>
+                <p>
+                    Coverage metrics help assess the quality and reliability of the alignment to a reference genome.
+                </p>
+
+                <div class="metric-card">
+                    <h4>Mean Coverage</h4>
+                    <p>
+                        The average number of reads covering each position in the reference.
+                        Higher coverage generally means more reliable damage estimates.
+                    </p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>Breadth</h4>
+                    <p>
+                        The proportion of the reference genome covered by at least one read.
+                        Expressed as a percentage (0-100%).
+                    </p>
+                </div>
+
+                <div class="metric-card">
+                    <h4>Expected Breadth</h4>
+                    <p>
+                        The theoretical breadth expected given the observed coverage, calculated as:
+                    </p>
+                    <div class="formula">Expected Breadth = 1 - e<sup>-coverage</sup></div>
+                </div>
+
+                <div class="metric-card">
+                    <h4>Breadth/Expected Ratio (B/E)</h4>
+                    <p>
+                        Compares observed breadth to expected breadth. A ratio near 1.0 suggests
+                        coverage matches statistical expectations, indicating genuine signal.
+                    </p>
+                    <div class="interpretation">
+                        <strong>Interpretation:</strong> Ratios significantly below 1.0 may indicate
+                        uneven coverage or alignment artifacts. Values above 1.0 are unexpected.
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <h4>Coverage Evenness</h4>
+                    <p>
+                        Measures how uniformly reads are distributed across the reference genome.
+                        Based on methods described in <a href="https://www.nature.com/articles/jhg201621" target="_blank">Lander & Waterman coverage theory</a>.
+                    </p>
+                    <div class="interpretation">
+                        <strong>Interpretation:</strong> Higher values indicate more uniform distribution.
+                        Very low evenness may suggest localized coverage (potential artifacts).
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <h4>Normalized Gini Coefficient</h4>
+                    <p>
+                        Measures inequality in coverage distribution across positions.
+                        Originally an economics measure, adapted for genomics.
+                    </p>
+                    <div class="interpretation">
+                        <strong>Interpretation:</strong> Lower values indicate more even coverage.
+                        High values suggest coverage is concentrated in specific regions.
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <h4>Normalized Entropy</h4>
+                    <p>
+                        Assesses the randomness/uniformity of coverage positions.
+                        Higher entropy indicates more uniform, random distribution.
+                    </p>
+                </div>
+            </section>
+
+            <section class="help-section" id="status">
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    Damage Status
+                </h2>
+                <p>
+                    Each reference is classified based on its damage characteristics:
+                </p>
+
+                <div class="status-examples">
+                    <div class="status-example">
+                        <span class="status-badge damaged">Damaged</span>
+                        <p>
+                            Shows statistically significant ancient DNA damage patterns.
+                            These taxa likely represent authentic ancient organisms from the sample.
+                        </p>
+                    </div>
+                    <div class="status-example">
+                        <span class="status-badge non-damaged">Non-Damaged</span>
+                        <p>
+                            Does not show significant damage. May represent modern contamination,
+                            organisms with insufficient coverage, or recently deposited material.
+                        </p>
+                    </div>
+                </div>
+
+                <p>
+                    The status classification considers both the damage level and its statistical significance.
+                    A taxon needs both elevated damage and high confidence to be classified as "damaged."
+                </p>
+            </section>
+
+            <section class="help-section" id="references">
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    References & Tools
+                </h2>
+                <p>
+                    The damage analysis in this explorer uses methods from:
+                </p>
+
+                <div class="reference-links">
+                    <h4>Software</h4>
+                    <a href="https://github.com/metaDMG-dev/metaDMG-core" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                        </svg>
+                        metaDMG-core — Ancient DNA damage estimation
+                    </a>
+                    <a href="https://github.com/genomewalker/bam-filter" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                        </svg>
+                        bam-filter — Coverage quality filtering
+                    </a>
+                </div>
+
+                <div class="reference-links" style="margin-top: var(--space-md);">
+                    <h4>Publication</h4>
+                    <a href="https://www.biorxiv.org/content/10.1101/2023.06.10.544454v3" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        Two-million-year-old microbial communities from Kap København (bioRxiv)
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
