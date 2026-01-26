@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ancient DNA Damage Browser</title>
+    <script src="https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-mvp.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117; color: #c9d1d9;
+        }
+        .container { display: flex; height: 100vh; }
+
+        /* Sidebar - Sample selector */
+        .sidebar {
+            width: 280px; background: #161b22; border-right: 1px solid #30363d;
+            display: flex; flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 16px; border-bottom: 1px solid #30363d; background: #21262d;
+        }
+        .sidebar-header h1 { font-size: 15px; margin-bottom: 12px; }
+        .sample-list { flex: 1; overflow-y: auto; }
+        .sample-item {
+            padding: 12px 16px; border-bottom: 1px solid #21262d;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .sample-item:hover { background: #21262d; }
+        .sample-item.active { background: #1f6feb30; border-left: 3px solid #58a6ff; }
+        .sample-item h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .sample-item .meta { font-size: 12px; color: #8b949e; }
+        .sample-item .stats {
+            display: flex; gap: 12px; margin-top: 6px; font-size: 11px;
+        }
+        .sample-item .stat { color: #8b949e; }
+        .sample-item .stat span { color: #58a6ff; font-weight: 600; }
+
+        /* Main content */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Overview header */
+        .overview-header {
+            padding: 16px 24px; background: #161b22; border-bottom: 1px solid #30363d;
+        }
+        .overview-header h2 { font-size: 18px; margin-bottom: 8px; }
+        .overview-stats { display: flex; gap: 24px; }
+        .overview-stat { font-size: 13px; color: #8b949e; }
+        .overview-stat strong { color: #c9d1d9; font-size: 18px; display: block; }
+
+        /* Content area */
+        .content { flex: 1; display: flex; overflow: hidden; }
+
+        /* Sunburst panel */
+        .sunburst-panel {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 24px; position: relative;
+        }
+        .sunburst-container {
+            position: relative; width: 100%; max-width: 700px; aspect-ratio: 1;
+        }
+        #sunburst { width: 100%; height: 100%; }
+        .sunburst-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; pointer-events: none;
+        }
+        .sunburst-center h3 { font-size: 14px; color: #c9d1d9; }
+        .sunburst-center p { font-size: 12px; color: #8b949e; margin-top: 4px; }
+
+        .breadcrumb {
+            padding: 8px 16px; background: #21262d; border-radius: 6px;
+            font-size: 13px; margin-bottom: 16px; min-height: 36px;
+        }
+        .breadcrumb span { color: #8b949e; }
+        .breadcrumb .sep { margin: 0 8px; color: #484f58; }
+
+        .sunburst-legend {
+            display: flex; gap: 16px; margin-top: 16px; font-size: 12px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+
+        /* Detail panel */
+        .detail-panel {
+            width: 400px; background: #161b22; border-left: 1px solid #30363d;
+            display: flex; flex-direction: column; transform: translateX(100%);
+            transition: transform 0.3s; position: absolute; right: 0; top: 0;
+            height: 100%; z-index: 10;
+        }
+        .detail-panel.open { transform: translateX(0); position: relative; }
+        .detail-header {
+            padding: 16px; background: #21262d; border-bottom: 1px solid #30363d;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .detail-header h3 { font-size: 15px; font-weight: 600; }
+        .detail-header .taxonomy { font-size: 12px; color: #8b949e; margin-top: 4px; }
+        .close-btn {
+            background: none; border: none; color: #8b949e;
+            font-size: 20px; cursor: pointer; line-height: 1;
+        }
+        .close-btn:hover { color: #c9d1d9; }
+
+        .detail-content { flex: 1; overflow-y: auto; padding: 16px; }
+
+        .smiley-plot {
+            background: #0d1117; border-radius: 8px; padding: 16px;
+            margin-bottom: 16px;
+        }
+        .smiley-plot h4 {
+            font-size: 12px; color: #8b949e; margin-bottom: 12px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        #smiley-canvas { width: 100%; height: 200px; }
+
+        .metrics-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+            margin-bottom: 16px;
+        }
+        .metric-card {
+            background: #21262d; padding: 12px; border-radius: 6px;
+        }
+        .metric-card label {
+            font-size: 11px; color: #8b949e; text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .metric-card .value {
+            font-size: 20px; font-weight: 600; margin-top: 4px;
+        }
+        .metric-card .value.high { color: #f85149; }
+        .metric-card .value.medium { color: #d29922; }
+        .metric-card .value.low { color: #3fb950; }
+
+        .detail-table { width: 100%; font-size: 13px; }
+        .detail-table tr { border-bottom: 1px solid #21262d; }
+        .detail-table th {
+            text-align: left; padding: 8px 0; color: #8b949e;
+            font-weight: 500; width: 100px;
+        }
+        .detail-table td { padding: 8px 0; }
+
+        /* Loading & empty states */
+        .loading, .empty-state {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100%; color: #8b949e;
+        }
+        .loading::before {
+            content: ''; width: 32px; height: 32px; margin-bottom: 16px;
+            border: 3px solid #30363d; border-top-color: #58a6ff;
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state svg { width: 64px; height: 64px; margin-bottom: 16px; opacity: 0.5; }
+
+        /* Filters in overview */
+        .filters-bar {
+            display: flex; gap: 12px; padding: 12px 24px;
+            background: #0d1117; border-bottom: 1px solid #30363d;
+        }
+        .filter-chip {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 12px; background: #21262d; border-radius: 16px;
+            font-size: 12px;
+        }
+        .filter-chip label { color: #8b949e; }
+        .filter-chip input {
+            background: transparent; border: none; color: #c9d1d9;
+            width: 60px; font-size: 12px;
+        }
+        .filter-chip input:focus { outline: none; }
+        .filter-chip select {
+            background: transparent; border: none; color: #c9d1d9;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>aDNA Damage Browser</h1>
+                <input type="text" id="sample-search" placeholder="Search samples..."
+                    style="width:100%; padding:8px; background:#0d1117; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; font-size:13px;">
+            </div>
+            <div class="sample-list" id="sample-list">
+                <div class="loading">Loading samples</div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="overview-header" id="overview-header" style="display:none;">
+                <h2 id="sample-title">Select a sample</h2>
+                <div class="overview-stats" id="overview-stats"></div>
+            </div>
+
+            <div class="filters-bar" id="filters-bar" style="display:none;">
+                <div class="filter-chip">
+                    <label>Min damage:</label>
+                    <input type="number" id="filter-damage" value="0" min="0" max="1" step="0.01">
+                </div>
+                <div class="filter-chip">
+                    <label>Min significance:</label>
+                    <input type="number" id="filter-significance" value="0" min="0" step="0.5">
+                </div>
+                <div class="filter-chip">
+                    <label>Min reads:</label>
+                    <input type="number" id="filter-reads" value="0" min="0" step="10">
+                </div>
+                <div class="filter-chip">
+                    <label>Color by:</label>
+                    <select id="color-by">
+                        <option value="domain">Domain</option>
+                        <option value="damage">Damage</option>
+                        <option value="significance">Significance</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="sunburst-panel" id="sunburst-panel">
+                    <div class="empty-state" id="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                        <p>Select a sample to explore its taxonomy</p>
+                    </div>
+                    <div id="sunburst-view" style="display:none; width:100%; height:100%; flex-direction:column; align-items:center;">
+                        <div class="breadcrumb" id="breadcrumb">
+                            <span>Click a segment to zoom in</span>
+                        </div>
+                        <div class="sunburst-container">
+                            <svg id="sunburst"></svg>
+                            <div class="sunburst-center" id="sunburst-center">
+                                <h3>-</h3>
+                                <p>-</p>
+                            </div>
+                        </div>
+                        <div class="sunburst-legend" id="sunburst-legend"></div>
+                    </div>
+                </div>
+
+                <div class="detail-panel" id="detail-panel">
+                    <div class="detail-header">
+                        <div>
+                            <h3 id="detail-title">-</h3>
+                            <div class="taxonomy" id="detail-taxonomy">-</div>
+                        </div>
+                        <button class="close-btn" id="close-detail">&times;</button>
+                    </div>
+                    <div class="detail-content">
+                        <div class="smiley-plot">
+                            <h4>Damage Profile</h4>
+                            <canvas id="smiley-canvas"></canvas>
+                        </div>
+                        <div class="metrics-grid" id="metrics-grid"></div>
+                        <table class="detail-table" id="detail-table"></table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        const JSDELIVR_BUNDLES = {
+            mvp: {
+                mainModule: 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-mvp.wasm',
+                mainWorker: 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-mvp.worker.js',
+            },
+        };
+
+        let db, conn;
+        let currentSample = null;
+        let sampleData = [];
+        let sunburstRoot = null;
+
+        // Domain colors
+        const domainColors = {
+            'd__Bacteria': '#3fb950',
+            'd__Archaea': '#a371f7',
+            'd__Eukaryota': '#f78166',
+            'd__Viruses': '#58a6ff',
+        };
+
+        async function initDuckDB() {
+            const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+            const worker = new Worker(bundle.mainWorker);
+            const logger = new duckdb.ConsoleLogger();
+            db = new duckdb.AsyncDuckDB(logger, worker);
+            await db.instantiate(bundle.mainModule);
+            conn = await db.connect();
+
+            await db.registerFileURL('meta.parquet', 'meta.parquet', duckdb.DuckDBDataProtocol.HTTP, false);
+            await db.registerFileURL('freq.parquet', 'freq.parquet', duckdb.DuckDBDataProtocol.HTTP, false);
+            await conn.query(`CREATE VIEW meta AS SELECT * FROM 'meta.parquet'`);
+            await conn.query(`CREATE VIEW freq AS SELECT * FROM 'freq.parquet'`);
+        }
+
+        async function loadSamples() {
+            const result = await conn.query(`
+                SELECT sample,
+                       COUNT(*) as taxa_count,
+                       SUM(n_reads) as total_reads,
+                       AVG(damage) as avg_damage,
+                       COUNT(DISTINCT domain) as domain_count
+                FROM meta
+                GROUP BY sample
+                ORDER BY sample
+            `);
+
+            const samples = result.toArray();
+            const list = document.getElementById('sample-list');
+
+            list.innerHTML = samples.map(s => `
+                <div class="sample-item" data-sample="${s.sample}">
+                    <h3>${s.sample}</h3>
+                    <div class="stats">
+                        <div class="stat">Taxa: <span>${s.taxa_count.toLocaleString()}</span></div>
+                        <div class="stat">Reads: <span>${Number(s.total_reads).toLocaleString()}</span></div>
+                        <div class="stat">Dmg: <span>${(s.avg_damage * 100).toFixed(1)}%</span></div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Click handlers
+            list.querySelectorAll('.sample-item').forEach(item => {
+                item.addEventListener('click', () => selectSample(item.dataset.sample));
+            });
+        }
+
+        async function selectSample(sample) {
+            currentSample = sample;
+
+            // Update sidebar selection
+            document.querySelectorAll('.sample-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.sample === sample);
+            });
+
+            // Show loading
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('sunburst-view').style.display = 'none';
+            document.getElementById('overview-header').style.display = 'block';
+            document.getElementById('filters-bar').style.display = 'flex';
+            document.getElementById('sample-title').textContent = `Sample: ${sample}`;
+
+            // Load sample data
+            await loadSampleData();
+        }
+
+        async function loadSampleData() {
+            const minDamage = parseFloat(document.getElementById('filter-damage').value) || 0;
+            const minSig = parseFloat(document.getElementById('filter-significance').value) || 0;
+            const minReads = parseInt(document.getElementById('filter-reads').value) || 0;
+
+            const result = await conn.query(`
+                SELECT m.*,
+                    f.fp1, f.fp2, f.fp3, f.fp4, f.fp5, f.fp6, f.fp7, f.fp8, f.fp9, f.fp10,
+                    f.fp11, f.fp12, f.fp13, f.fp14, f.fp15, f.fp16, f.fp17, f.fp18, f.fp19, f.fp20,
+                    f.fm1, f.fm2, f.fm3, f.fm4, f.fm5, f.fm6, f.fm7, f.fm8, f.fm9, f.fm10,
+                    f.fm11, f.fm12, f.fm13, f.fm14, f.fm15, f.fm16, f.fm17, f.fm18, f.fm19, f.fm20
+                FROM meta m
+                JOIN freq f ON m.id = f.id
+                WHERE m.sample = '${currentSample}'
+                  AND m.damage >= ${minDamage}
+                  AND m.significance >= ${minSig}
+                  AND m.n_reads >= ${minReads}
+            `);
+
+            sampleData = result.toArray();
+
+            // Update stats
+            const stats = document.getElementById('overview-stats');
+            const totalReads = sampleData.reduce((sum, d) => sum + d.n_reads, 0);
+            const avgDamage = sampleData.reduce((sum, d) => sum + d.damage, 0) / sampleData.length;
+            const domains = [...new Set(sampleData.map(d => d.domain))];
+
+            stats.innerHTML = `
+                <div class="overview-stat"><strong>${sampleData.length.toLocaleString()}</strong>Taxa</div>
+                <div class="overview-stat"><strong>${totalReads.toLocaleString()}</strong>Total reads</div>
+                <div class="overview-stat"><strong>${(avgDamage * 100).toFixed(1)}%</strong>Avg damage</div>
+                <div class="overview-stat"><strong>${domains.length}</strong>Domains</div>
+            `;
+
+            buildSunburst();
+        }
+
+        function buildSunburst() {
+            if (sampleData.length === 0) {
+                document.getElementById('sunburst-view').style.display = 'none';
+                document.getElementById('empty-state').style.display = 'flex';
+                document.getElementById('empty-state').innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M15 9l-6 6M9 9l6 6"/>
+                    </svg>
+                    <p>No taxa match the current filters</p>
+                `;
+                return;
+            }
+
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('sunburst-view').style.display = 'flex';
+
+            // Build hierarchy
+            const hierarchy = { name: 'root', children: [] };
+            const colorBy = document.getElementById('color-by').value;
+
+            sampleData.forEach(d => {
+                const path = [d.domain, d.phylum, d.class_, d.order_, d.family, d.genus, d.species];
+                let current = hierarchy;
+
+                path.forEach((name, i) => {
+                    if (!name) return;
+                    let child = current.children.find(c => c.name === name);
+                    if (!child) {
+                        child = { name, children: [], data: null, level: i };
+                        current.children.push(child);
+                    }
+                    current = child;
+                });
+
+                current.data = d;
+                current.value = d.n_reads;
+            });
+
+            // Calculate values up the tree
+            function calcValue(node) {
+                if (!node.children.length) return node.value || 1;
+                node.value = node.children.reduce((sum, c) => sum + calcValue(c), 0);
+                return node.value;
+            }
+            calcValue(hierarchy);
+
+            sunburstRoot = d3.hierarchy(hierarchy)
+                .sum(d => d.data ? d.data.n_reads : 0)
+                .sort((a, b) => b.value - a.value);
+
+            renderSunburst(sunburstRoot);
+            updateLegend();
+        }
+
+        function renderSunburst(root) {
+            const container = document.getElementById('sunburst');
+            const width = container.clientWidth || 600;
+            const height = container.clientHeight || 600;
+            const radius = Math.min(width, height) / 2;
+
+            const svg = d3.select('#sunburst')
+                .attr('viewBox', [-width / 2, -height / 2, width, height]);
+
+            svg.selectAll('*').remove();
+
+            const partition = d3.partition()
+                .size([2 * Math.PI, radius]);
+
+            partition(root);
+
+            const arc = d3.arc()
+                .startAngle(d => d.x0)
+                .endAngle(d => d.x1)
+                .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+                .padRadius(radius / 2)
+                .innerRadius(d => d.y0)
+                .outerRadius(d => d.y1 - 1);
+
+            const colorBy = document.getElementById('color-by').value;
+
+            function getColor(d) {
+                if (colorBy === 'domain') {
+                    // Find domain in ancestors
+                    let node = d;
+                    while (node) {
+                        if (node.data.name && node.data.name.startsWith('d__')) {
+                            return domainColors[node.data.name] || '#8b949e';
+                        }
+                        node = node.parent;
+                    }
+                    return '#8b949e';
+                } else if (colorBy === 'damage' && d.data.data) {
+                    const dmg = d.data.data.damage;
+                    if (dmg > 0.15) return '#f85149';
+                    if (dmg > 0.08) return '#d29922';
+                    return '#3fb950';
+                } else if (colorBy === 'significance' && d.data.data) {
+                    const sig = d.data.data.significance;
+                    if (sig > 10) return '#f85149';
+                    if (sig > 5) return '#d29922';
+                    return '#3fb950';
+                }
+                return '#8b949e';
+            }
+
+            const paths = svg.selectAll('path')
+                .data(root.descendants().filter(d => d.depth))
+                .join('path')
+                .attr('fill', d => {
+                    const base = getColor(d);
+                    const depth = d.depth;
+                    return d3.color(base).darker(depth * 0.15);
+                })
+                .attr('fill-opacity', d => d.children ? 0.8 : 1)
+                .attr('d', arc)
+                .style('cursor', 'pointer')
+                .on('mouseover', function(event, d) {
+                    d3.select(this).attr('fill-opacity', 1);
+                    updateCenter(d);
+                    updateBreadcrumb(d);
+                })
+                .on('mouseout', function(event, d) {
+                    d3.select(this).attr('fill-opacity', d.children ? 0.8 : 1);
+                })
+                .on('click', function(event, d) {
+                    if (d.data.data) {
+                        showDetail(d.data.data);
+                    } else {
+                        // Zoom into this node
+                        zoomTo(d);
+                    }
+                });
+
+            // Add titles for accessibility
+            paths.append('title')
+                .text(d => `${d.data.name}\n${d.value.toLocaleString()} reads`);
+        }
+
+        function zoomTo(node) {
+            // Re-render with this node as root
+            const root = d3.hierarchy(node.data)
+                .sum(d => d.data ? d.data.n_reads : 0)
+                .sort((a, b) => b.value - a.value);
+
+            renderSunburst(root);
+
+            // Update breadcrumb with back button
+            const bc = document.getElementById('breadcrumb');
+            const ancestors = [];
+            let n = node;
+            while (n) {
+                if (n.data.name !== 'root') ancestors.unshift(n.data.name);
+                n = n.parent;
+            }
+
+            bc.innerHTML = `
+                <span style="cursor:pointer;color:#58a6ff;" onclick="window.resetZoom()">Root</span>
+                ${ancestors.map(a => `<span class="sep">›</span><span>${a}</span>`).join('')}
+            `;
+        }
+
+        window.resetZoom = function() {
+            buildSunburst();
+            document.getElementById('breadcrumb').innerHTML = '<span>Click a segment to zoom in</span>';
+        };
+
+        function updateCenter(d) {
+            const center = document.getElementById('sunburst-center');
+            const name = d.data.name.replace(/^[dpcofgs]__/, '');
+            center.innerHTML = `
+                <h3>${name}</h3>
+                <p>${d.value.toLocaleString()} reads</p>
+            `;
+        }
+
+        function updateBreadcrumb(d) {
+            const ancestors = [];
+            let node = d;
+            while (node && node.data.name !== 'root') {
+                ancestors.unshift(node.data.name);
+                node = node.parent;
+            }
+
+            const bc = document.getElementById('breadcrumb');
+            if (ancestors.length === 0) {
+                bc.innerHTML = '<span>Click a segment to zoom in</span>';
+            } else {
+                bc.innerHTML = ancestors.map(a =>
+                    `<span>${a.replace(/^[dpcofgs]__/, '')}</span>`
+                ).join('<span class="sep">›</span>');
+            }
+        }
+
+        function updateLegend() {
+            const legend = document.getElementById('sunburst-legend');
+            const colorBy = document.getElementById('color-by').value;
+
+            if (colorBy === 'domain') {
+                legend.innerHTML = Object.entries(domainColors).map(([k, v]) => `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background:${v}"></div>
+                        <span>${k.replace('d__', '')}</span>
+                    </div>
+                `).join('');
+            } else {
+                legend.innerHTML = `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background:#f85149"></div>
+                        <span>High</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background:#d29922"></div>
+                        <span>Medium</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background:#3fb950"></div>
+                        <span>Low</span>
+                    </div>
+                `;
+            }
+        }
+
+        function showDetail(data) {
+            const panel = document.getElementById('detail-panel');
+            panel.classList.add('open');
+
+            // Title
+            const name = data.species || data.genus || data.family || data.reference;
+            document.getElementById('detail-title').textContent = name.replace(/^[dpcofgs]__/, '');
+
+            // Taxonomy breadcrumb
+            const taxPath = [data.domain, data.phylum, data.class_, data.order_, data.family, data.genus]
+                .filter(Boolean)
+                .map(t => t.replace(/^[dpcofgs]__/, ''))
+                .join(' › ');
+            document.getElementById('detail-taxonomy').textContent = taxPath;
+
+            // Metrics
+            const damageClass = data.damage > 0.15 ? 'high' : data.damage > 0.08 ? 'medium' : 'low';
+            const sigClass = data.significance > 10 ? 'high' : data.significance > 5 ? 'medium' : 'low';
+
+            document.getElementById('metrics-grid').innerHTML = `
+                <div class="metric-card">
+                    <label>Damage</label>
+                    <div class="value ${damageClass}">${(data.damage * 100).toFixed(1)}%</div>
+                </div>
+                <div class="metric-card">
+                    <label>Significance</label>
+                    <div class="value ${sigClass}">${data.significance.toFixed(1)}</div>
+                </div>
+                <div class="metric-card">
+                    <label>Reads</label>
+                    <div class="value">${data.n_reads.toLocaleString()}</div>
+                </div>
+                <div class="metric-card">
+                    <label>Reference</label>
+                    <div class="value" style="font-size:11px;">${data.reference}</div>
+                </div>
+            `;
+
+            // Detail table
+            document.getElementById('detail-table').innerHTML = `
+                <tr><th>Domain</th><td>${data.domain}</td></tr>
+                <tr><th>Phylum</th><td>${data.phylum}</td></tr>
+                <tr><th>Class</th><td>${data.class_}</td></tr>
+                <tr><th>Order</th><td>${data.order_}</td></tr>
+                <tr><th>Family</th><td>${data.family}</td></tr>
+                <tr><th>Genus</th><td>${data.genus}</td></tr>
+                <tr><th>Species</th><td>${data.species}</td></tr>
+            `;
+
+            // Render smiley plot
+            renderSmileyPlot(data);
+        }
+
+        function renderSmileyPlot(data) {
+            const canvas = document.getElementById('smiley-canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set actual size
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width - 32;
+            canvas.height = 200;
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const padding = { top: 20, right: 20, bottom: 35, left: 45 };
+            const plotW = w - padding.left - padding.right;
+            const plotH = h - padding.top - padding.bottom;
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, w, h);
+
+            // Extract frequencies (positions 1-20)
+            const fp = [], fm = [];
+            for (let i = 1; i <= 20; i++) {
+                fp.push(data[`fp${i}`] || 0);
+                fm.push(data[`fm${i}`] || 0);
+            }
+
+            // Scale
+            const maxY = Math.max(0.35, ...fp, ...fm);
+            const positions = 20;
+
+            // Draw grid
+            ctx.strokeStyle = '#21262d';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = padding.top + (plotH * i / 4);
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(w - padding.right, y);
+                ctx.stroke();
+            }
+
+            // Y-axis labels
+            ctx.fillStyle = '#8b949e';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 4; i++) {
+                const val = maxY * (4 - i) / 4;
+                const y = padding.top + (plotH * i / 4);
+                ctx.fillText((val * 100).toFixed(0) + '%', padding.left - 8, y + 3);
+            }
+
+            // X-axis
+            ctx.textAlign = 'center';
+            ctx.fillText("5'", padding.left + plotW * 0.25, h - 8);
+            ctx.fillText("3'", padding.left + plotW * 0.75, h - 8);
+
+            // Center line
+            ctx.strokeStyle = '#30363d';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(padding.left + plotW / 2, padding.top);
+            ctx.lineTo(padding.left + plotW / 2, h - padding.bottom);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            const halfW = plotW / 2;
+            const xScale5p = halfW / positions;
+            const xScale3p = halfW / positions;
+            const yScale = plotH / maxY;
+
+            // Draw 5' C->T (red, left side - positions go from edge to center)
+            ctx.strokeStyle = '#f85149';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            fp.forEach((v, i) => {
+                const x = padding.left + (i * xScale5p);
+                const y = h - padding.bottom - (v * yScale);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Draw points
+            ctx.fillStyle = '#f85149';
+            fp.forEach((v, i) => {
+                const x = padding.left + (i * xScale5p);
+                const y = h - padding.bottom - (v * yScale);
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw 3' G->A (blue, right side - positions go from center to edge)
+            ctx.strokeStyle = '#58a6ff';
+            ctx.beginPath();
+            fm.forEach((v, i) => {
+                const x = padding.left + halfW + ((positions - 1 - i) * xScale3p);
+                const y = h - padding.bottom - (v * yScale);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Draw points
+            ctx.fillStyle = '#58a6ff';
+            fm.forEach((v, i) => {
+                const x = padding.left + halfW + ((positions - 1 - i) * xScale3p);
+                const y = h - padding.bottom - (v * yScale);
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Legend
+            ctx.font = '11px sans-serif';
+            ctx.fillStyle = '#f85149';
+            ctx.fillText("C→T", padding.left + 40, padding.top + 15);
+            ctx.fillStyle = '#58a6ff';
+            ctx.fillText("G→A", w - padding.right - 40, padding.top + 15);
+        }
+
+        // Event handlers
+        function setupEventHandlers() {
+            // Close detail panel
+            document.getElementById('close-detail').addEventListener('click', () => {
+                document.getElementById('detail-panel').classList.remove('open');
+            });
+
+            // Filter changes
+            ['filter-damage', 'filter-significance', 'filter-reads'].forEach(id => {
+                document.getElementById(id).addEventListener('change', () => {
+                    if (currentSample) loadSampleData();
+                });
+            });
+
+            // Color by change
+            document.getElementById('color-by').addEventListener('change', () => {
+                if (currentSample) buildSunburst();
+            });
+
+            // Sample search
+            document.getElementById('sample-search').addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                document.querySelectorAll('.sample-item').forEach(item => {
+                    const name = item.dataset.sample.toLowerCase();
+                    item.style.display = name.includes(query) ? 'block' : 'none';
+                });
+            });
+        }
+
+        // Initialize
+        async function init() {
+            try {
+                await initDuckDB();
+                await loadSamples();
+                setupEventHandlers();
+            } catch (e) {
+                console.error(e);
+                document.getElementById('sample-list').innerHTML =
+                    `<div class="loading" style="animation:none">Error: ${e.message}</div>`;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
