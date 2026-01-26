@@ -1995,6 +1995,14 @@
                         <div class="stat-sub">Based on damage ${pct(data.damage)}% and significance ${n(data.significance).toFixed(1)}</div>
                     </div>
                     <div class="stat-card">
+                        <div class="stat-label">Reference</div>
+                        <div class="stat-value" style="font-size:11px;">${data.reference}</div>
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top:var(--space-lg);"><span class="section-title">Damage Metrics</span></div>
+                <div class="stats-grid">
+                    <div class="stat-card">
                         <div class="stat-label">Damage (observed)</div>
                         <div class="stat-value">${pct(data.damage)}%</div>
                     </div>
@@ -2010,52 +2018,141 @@
                         <div class="stat-label">MAP Significance</div>
                         <div class="stat-value">${n(data.map_significance).toFixed(2)}</div>
                     </div>
+                </div>
+
+                <div class="section-header" style="margin-top:var(--space-lg);"><span class="section-title">MAP Model Parameters</span></div>
+                <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-label">Reads</div>
+                        <div class="stat-label">A (amplitude)</div>
+                        <div class="stat-value" style="font-size:14px;">${n(data.map_A).toFixed(4)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">q (rate)</div>
+                        <div class="stat-value" style="font-size:14px;">${n(data.map_q).toFixed(4)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">φ (phase)</div>
+                        <div class="stat-value" style="font-size:14px;">${n(data.map_phi).toFixed(4)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">c (offset)</div>
+                        <div class="stat-value" style="font-size:14px;">${n(data.map_c).toFixed(4)}</div>
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top:var(--space-lg);"><span class="section-title">Read Statistics</span></div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">N Reads</div>
                         <div class="stat-value">${fmt(data.n_reads)}</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Mean Length</div>
-                        <div class="stat-value">${n(data.mean_length).toFixed(1)}</div>
+                        <div class="stat-label">N Alignments</div>
+                        <div class="stat-value">${fmt(data.n_alns)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Read Length (mean)</div>
+                        <div class="stat-value">${n(data.read_length_mean).toFixed(1)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Read Length (std)</div>
+                        <div class="stat-value">${n(data.read_length_std).toFixed(1)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Aligned Length</div>
+                        <div class="stat-value">${n(data.read_aligned_length).toFixed(1)}</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">GC Content</div>
                         <div class="stat-value">${pct(data.gc_content)}%</div>
                     </div>
+                </div>
+
+                <div class="section-header" style="margin-top:var(--space-lg);"><span class="section-title">Mapping Quality</span></div>
+                <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-label">Coverage</div>
+                        <div class="stat-label">Mapping Quality</div>
+                        <div class="stat-value">${n(data.mapping_quality).toFixed(1)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Alignment Score</div>
+                        <div class="stat-value">${n(data.read_aln_score).toFixed(1)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Edit Distance</div>
+                        <div class="stat-value">${n(data.edit_distances).toFixed(2)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">ANI (mean)</div>
+                        <div class="stat-value">${pct(data.read_ani_mean)}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">ANI (std)</div>
+                        <div class="stat-value">${n(data.read_ani_std).toFixed(4)}</div>
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top:var(--space-lg);"><span class="section-title">Coverage Statistics</span></div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Coverage (mean)</div>
                         <div class="stat-value">${n(data.coverage_mean).toFixed(2)}x</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Coverage (trunc)</div>
+                        <div class="stat-value">${n(data.coverage_mean_trunc).toFixed(2)}x</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Coverage (covered)</div>
+                        <div class="stat-value">${n(data.coverage_covered_mean).toFixed(2)}x</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Bases Covered</div>
+                        <div class="stat-value">${fmt(data.bases_covered)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Mean Covered Bases</div>
+                        <div class="stat-value">${n(data.mean_covered_bases).toFixed(1)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Max Covered Bases</div>
+                        <div class="stat-value">${fmt(data.max_covered_bases)}</div>
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top:var(--space-lg);"><span class="section-title">Reference & Breadth</span></div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Reference Length</div>
+                        <div class="stat-value">${fmt(data.reference_length)}</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Breadth</div>
                         <div class="stat-value">${pct(data.breadth)}%</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">ANI</div>
-                        <div class="stat-value">${pct(data.read_ani_mean)}%</div>
+                        <div class="stat-label">Expected Breadth</div>
+                        <div class="stat-value">${pct(data.exp_breadth)}%</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Reference</div>
-                        <div class="stat-value" style="font-size:11px;">${data.reference}</div>
+                        <div class="stat-label">Breadth/Exp Ratio</div>
+                        <div class="stat-value">${n(data.breadth_exp_ratio).toFixed(2)}</div>
                     </div>
                 </div>
 
-                <div class="stats-grid" style="margin-top:var(--space-md);">
+                <div class="section-header" style="margin-top:var(--space-lg);"><span class="section-title">Coverage Evenness</span></div>
+                <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-label">MAP A (amplitude)</div>
-                        <div class="stat-value" style="font-size:14px;">${n(data.map_A).toFixed(4)}</div>
+                        <div class="stat-label">Norm Entropy</div>
+                        <div class="stat-value">${n(data.norm_entropy).toFixed(4)}</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">MAP q (rate)</div>
-                        <div class="stat-value" style="font-size:14px;">${n(data.map_q).toFixed(4)}</div>
+                        <div class="stat-label">Norm Gini</div>
+                        <div class="stat-value">${n(data.norm_gini).toFixed(4)}</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">MAP φ (phase)</div>
-                        <div class="stat-value" style="font-size:14px;">${n(data.map_phi).toFixed(4)}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">MAP c (offset)</div>
-                        <div class="stat-value" style="font-size:14px;">${n(data.map_c).toFixed(4)}</div>
+                        <div class="stat-label">Cov Evenness</div>
+                        <div class="stat-value">${n(data.cov_evenness).toFixed(4)}</div>
                     </div>
                 </div>
 
