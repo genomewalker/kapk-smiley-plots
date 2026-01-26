@@ -290,8 +290,9 @@
             URL.revokeObjectURL(worker_url);
             conn = await db.connect();
 
-            await db.registerFileURL('meta.parquet', 'meta.parquet', duckdb.DuckDBDataProtocol.HTTP, false);
-            await db.registerFileURL('freq.parquet', 'freq.parquet', duckdb.DuckDBDataProtocol.HTTP, false);
+            const baseUrl = new URL('.', window.location.href).href;
+            await db.registerFileURL('meta.parquet', baseUrl + 'meta.parquet', duckdb.DuckDBDataProtocol.HTTP, false);
+            await db.registerFileURL('freq.parquet', baseUrl + 'freq.parquet', duckdb.DuckDBDataProtocol.HTTP, false);
             await conn.query(`CREATE VIEW meta AS SELECT * FROM 'meta.parquet'`);
             await conn.query(`CREATE VIEW freq AS SELECT * FROM 'freq.parquet'`);
         }
