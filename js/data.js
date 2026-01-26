@@ -17,7 +17,7 @@ export async function initDuckDB() {
     URL.revokeObjectURL(worker_url);
     state.conn = await state.db.connect();
 
-    const baseUrl = new URL('.', window.location.href).href;
+    const baseUrl = new URL('/', window.location.href).href;
     const [metaResp, freqResp] = await Promise.all([
         fetch(baseUrl + 'meta.parquet'),
         fetch(baseUrl + 'freq.parquet')
