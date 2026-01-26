@@ -291,8 +291,20 @@
             conn = await db.connect();
 
             const baseUrl = new URL('.', window.location.href).href;
-            await db.registerFileURL('meta.parquet', baseUrl + 'meta.parquet', duckdb.DuckDBDataProtocol.HTTP, false);
-            await db.registerFileURL('freq.parquet', baseUrl + 'freq.parquet', duckdb.DuckDBDataProtocol.HTTP, false);
+            const metaUrl = baseUrl + 'meta.parquet';
+            const freqUrl = baseUrl + 'freq.parquet';
+
+            // Fetch parquet files and register as buffers
+            const [metaResp, freqResp] = await Promise.all([
+                fetch(metaUrl),
+                fetch(freqUrl)
+            ]);
+            const metaBuffer = new Uint8Array(await metaResp.arrayBuffer());
+            const freqBuffer = new Uint8Array(await freqResp.arrayBuffer());
+
+            await db.registerFileBuffer('meta.parquet', metaBuffer);
+            await db.registerFileBuffer('freq.parquet', freqBuffer);
+
             await conn.query(`CREATE VIEW meta AS SELECT * FROM 'meta.parquet'`);
             await conn.query(`CREATE VIEW freq AS SELECT * FROM 'freq.parquet'`);
         }
