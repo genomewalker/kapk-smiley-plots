@@ -1,7 +1,7 @@
 // ========== TABLE RENDERING ==========
-import { state, domainColors } from './state.js?v=38';
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=38';
-import { renderSunburst, updateLegend } from './sunburst.js?v=38';
+import { state, domainColors } from './state.js?v=39';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=39';
+import { renderSunburst, updateLegend } from './sunburst.js?v=39';
 
 export function renderSampleList(samples) {
     const container = document.getElementById('sample-list');
@@ -24,7 +24,7 @@ export function renderSampleList(samples) {
 
     container.querySelectorAll('.sample-item').forEach(item => {
         item.addEventListener('click', async () => {
-            const { selectSample } = await import('./actions.js?v=38');
+            const { selectSample } = await import('./actions.js?v=39');
             selectSample(item.dataset.sample);
         });
     });
@@ -78,7 +78,7 @@ export function renderTable() {
     // Row click handlers
     tbody.querySelectorAll('tr').forEach(row => {
         row.addEventListener('click', async (e) => {
-            const { selectReference, toggleCompare } = await import('./actions.js?v=38');
+            const { selectReference, toggleCompare } = await import('./actions.js?v=39');
             if (e.target.closest('.compare-checkbox')) {
                 toggleCompare(Number(row.dataset.id));
             } else {
@@ -173,17 +173,17 @@ function showContextMenu(x, y, data) {
             const taxon = item.dataset.taxon;
 
             if (action === 'track-species' || action === 'track-genus' || action === 'track-family') {
-                const { trackTaxonAcrossSamples } = await import('./compare.js?v=38');
+                const { trackTaxonAcrossSamples } = await import('./compare.js?v=39');
                 const level = action.replace('track-', '');
                 trackTaxonAcrossSamples(taxon, level);
             } else if (action === 'add-compare') {
-                const { addToBasket } = await import('./compare.js?v=38');
+                const { addToBasket } = await import('./compare.js?v=39');
                 // Note: addToBasket is on window, but we can also use direct import
                 if (window.addToBasket) {
                     window.addToBasket(data.id, state.currentSample);
                 }
             } else if (action === 'view-details') {
-                const { selectReference } = await import('./actions.js?v=38');
+                const { selectReference } = await import('./actions.js?v=39');
                 selectReference(data.id);
             }
 

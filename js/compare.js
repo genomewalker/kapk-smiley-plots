@@ -1,7 +1,7 @@
 // ========== CROSS-SAMPLE COMPARISON SYSTEM ==========
 // A flagship feature for tracking taxa across multiple samples
-import { state } from './state.js?v=38';
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=38';
+import { state } from './state.js?v=39';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=39';
 
 // Global comparison basket (persists across sample switches)
 if (!window.comparisonBasket) {
@@ -57,7 +57,7 @@ export async function trackTaxonAcrossSamples(taxonName, taxonLevel = 'species')
             ORDER BY m.damage DESC
         `);
 
-        const { convertResults } = await import('./utils.js?v=38');
+        const { convertResults } = await import('./utils.js?v=39');
         const matches = convertResults(result);
 
         renderTrackingResults(taxonName, taxonLevel, matches);
@@ -213,7 +213,7 @@ function renderTrackingResults(taxonName, taxonLevel, matches) {
                                             <td class="mono">${n(d.norm_entropy).toFixed(3)}</td>
                                             <td class="mono">${n(d.norm_gini).toFixed(3)}</td>
                                             <td class="mono">${n(d.read_ani_mean).toFixed(1)}%</td>
-                                            <td class="mono">${pct(d.gc_content)}%</td>
+                                            <td class="mono">${n(d.gc_content).toFixed(1)}%</td>
                                         </tr>
                                     `;
                                 }).join('')}
@@ -330,7 +330,7 @@ function setupTrackingTableSorting(matches, taxonName, taxonLevel) {
                         <td class="mono">${n(d.norm_entropy).toFixed(3)}</td>
                         <td class="mono">${n(d.norm_gini).toFixed(3)}</td>
                         <td class="mono">${n(d.read_ani_mean).toFixed(1)}%</td>
-                        <td class="mono">${pct(d.gc_content)}%</td>
+                        <td class="mono">${n(d.gc_content).toFixed(1)}%</td>
                     </tr>
                 `;
             }).join('');
@@ -863,7 +863,7 @@ export function openComparePanel() {
                                         <td class="mono">${n(d.norm_entropy).toFixed(3)}</td>
                                         <td class="mono">${n(d.norm_gini).toFixed(3)}</td>
                                         <td class="mono">${n(d.read_ani_mean).toFixed(1)}%</td>
-                                        <td class="mono">${pct(d.gc_content)}%</td>
+                                        <td class="mono">${n(d.gc_content).toFixed(1)}%</td>
                                         <td class="action-cell">
                                             <button class="row-action track" onclick="window.trackFromCompare('${escapeHtml(d.species || d.genus)}', '${d.species ? 'species' : 'genus'}')" title="Track across samples">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1264,7 +1264,7 @@ window.clearBasket = function() {
     window.comparisonBasket = [];
     state.compareList = [];
     updateBasketIndicator();
-    import('./table.js?v=38').then(({ renderTable }) => renderTable());
+    import('./table.js?v=39').then(({ renderTable }) => renderTable());
     closeCompareModal();
 };
 

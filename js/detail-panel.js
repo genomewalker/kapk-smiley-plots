@@ -1,5 +1,5 @@
 // ========== DETAIL PANEL & SMILEY PLOT ==========
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=38';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=39';
 
 // Store current data for modal
 let currentDetailData = null;
@@ -115,7 +115,7 @@ export function renderDetailPanel(data) {
                         <div class="mini-stat"><span class="label">Reads</span><span class="value">${fmt(data.n_reads)}</span></div>
                         <div class="mini-stat"><span class="label">Aligns</span><span class="value">${fmt(data.n_alns)}</span></div>
                         <div class="mini-stat"><span class="label">Length</span><span class="value">${n(data.read_length_mean).toFixed(0)}±${n(data.read_length_std).toFixed(0)}</span></div>
-                        <div class="mini-stat"><span class="label">GC</span><span class="value">${pct(data.gc_content)}%</span></div>
+                        <div class="mini-stat"><span class="label">GC</span><span class="value">${n(data.gc_content).toFixed(1)}%</span></div>
                     </div>
                 </div>
             </div>
@@ -238,7 +238,7 @@ window.trackCurrentTaxon = async function() {
 
     if (taxonName) {
         // Dynamically import compare.js to get the tracking function
-        const { trackTaxonAcrossSamples } = await import('./compare.js?v=38');
+        const { trackTaxonAcrossSamples } = await import('./compare.js?v=39');
         trackTaxonAcrossSamples(taxonName, taxonLevel);
     }
 };
@@ -324,7 +324,7 @@ window.openDetailModal = function() {
                                 <div class="stat-row"><span>Read Length (mean)</span><span>${n(data.read_length_mean).toFixed(1)}</span></div>
                                 <div class="stat-row"><span>Read Length (std)</span><span>${n(data.read_length_std).toFixed(1)}</span></div>
                                 <div class="stat-row"><span>Aligned Length</span><span>${n(data.read_aligned_length).toFixed(1)}</span></div>
-                                <div class="stat-row"><span>GC Content</span><span>${pct(data.gc_content)}%</span></div>
+                                <div class="stat-row"><span>GC Content</span><span>${n(data.gc_content).toFixed(1)}%</span></div>
                             </div>
                         </div>
 
