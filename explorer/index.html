@@ -7,13 +7,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles.css?v=31">
+    <link rel="stylesheet" href="../styles.css?v=33">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
     <div class="app">
         <!-- Header -->
         <header class="header">
+            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
             <a href="../" class="logo" style="text-decoration: none;">
                 <div class="logo-icon">
                     <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
@@ -41,8 +48,10 @@
 
         <!-- Main workspace -->
         <div class="workspace" id="workspace">
+            <!-- Sidebar overlay (mobile) -->
+            <div class="sidebar-overlay" id="sidebar-overlay"></div>
             <!-- Sidebar -->
-            <aside class="sidebar">
+            <aside class="sidebar" id="sidebar">
                 <div class="sidebar-section">
                     <div class="sidebar-header">
                         Samples
@@ -223,6 +232,6 @@
         </div>
     </div>
 
-    <script type="module" src="../js/app.js?v=31"></script>
+    <script type="module" src="../js/app.js?v=33"></script>
 </body>
 </html>

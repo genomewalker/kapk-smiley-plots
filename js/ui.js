@@ -1,7 +1,7 @@
 // ========== UI EVENT LISTENERS ==========
-import { state } from './state.js?v=31';
-import { applyFilters, exportData } from './data.js?v=31';
-import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=31';
+import { state } from './state.js?v=33';
+import { applyFilters, exportData } from './data.js?v=33';
+import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=33';
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -132,7 +132,7 @@ window.searchSelectTaxon = function(taxonName, level) {
         .replace(/&amp;/g, '&');
 
     // Open tracking modal for this taxon
-    import('./compare.js?v=31').then(({ trackTaxonAcrossSamples }) => {
+    import('./compare.js?v=33').then(({ trackTaxonAcrossSamples }) => {
         trackTaxonAcrossSamples(unescaped, level);
     });
 };
@@ -265,8 +265,37 @@ export function setupEventListeners() {
 
     // Compare button
     document.getElementById('compare-btn').addEventListener('click', () => {
-        import('./compare.js?v=31').then(({ openComparePanel }) => {
+        import('./compare.js?v=33').then(({ openComparePanel }) => {
             openComparePanel();
         });
+    });
+
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    if (mobileMenuBtn && sidebar && sidebarOverlay) {
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('open');
+            mobileMenuBtn.classList.toggle('open');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('open');
+            mobileMenuBtn.classList.remove('open');
+        });
+    }
+
+    // Close mobile sidebar when a sample is selected
+    document.getElementById('sample-list').addEventListener('click', (e) => {
+        const sampleItem = e.target.closest('.sample-item');
+        if (sampleItem && window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('open');
+            mobileMenuBtn.classList.remove('open');
+        }
     });
 }

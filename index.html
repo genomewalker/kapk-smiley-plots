@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=31">
+    <link rel="stylesheet" href="styles.css?v=33">
     <style>
         html, body {
             height: auto;
@@ -162,6 +162,68 @@
 
         .landing-footer a:hover {
             text-decoration: underline;
+        }
+
+        /* Mobile responsiveness for landing page */
+        @media (max-width: 768px) {
+            .landing-header {
+                padding: var(--space-md) var(--space-lg);
+            }
+
+            .landing-main {
+                padding: var(--space-lg) var(--space-lg);
+            }
+
+            .paper-title {
+                font-size: 1.35rem;
+            }
+
+            .paper-authors {
+                font-size: 0.9rem;
+            }
+
+            .paper-meta {
+                gap: var(--space-md);
+            }
+
+            .paper-meta-item {
+                font-size: 0.85rem;
+            }
+
+            .link-item {
+                padding: var(--space-md);
+            }
+
+            .link-item-title {
+                font-size: 0.9rem;
+            }
+
+            .link-item-desc {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .landing-header {
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .landing-main {
+                padding: var(--space-md);
+            }
+
+            .paper-title {
+                font-size: 1.15rem;
+            }
+
+            .paper-meta {
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            .logo-text {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
