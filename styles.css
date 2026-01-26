@@ -4232,16 +4232,6 @@ body {
         transform: translateX(0);
         box-shadow: var(--shadow-lg);
     }
-
-    /* Allow table to scroll */
-    .content-area {
-        overflow: auto;
-    }
-
-    .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
 }
 
 /* ========== MOBILE MENU BUTTON ========== */
@@ -4438,9 +4428,16 @@ body {
         box-shadow: var(--shadow-lg);
     }
 
-    /* Main panel takes full width */
+    /* Main panel takes full width with proper flex constraints */
     .main-panel {
-        min-height: calc(100vh - 56px - 32px);
+        min-height: 0;
+        height: calc(100vh - 56px - 32px);
+        overflow: hidden;
+    }
+
+    .content-area {
+        min-height: 0;
+        overflow: hidden;
     }
 
     /* Toolbar - stacked filters */
@@ -4528,27 +4525,22 @@ body {
         gap: var(--space-sm);
     }
 
-    /* Content area - allow scroll */
-    .content-area {
-        overflow: auto;
-    }
-
-    /* Table - horizontal scroll */
+    /* Table - horizontal scroll within container */
     .table-container {
-        overflow-x: auto;
-        overflow-y: visible;
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
         -webkit-overflow-scrolling: touch;
     }
 
     .data-table {
-        min-width: 700px;
+        min-width: 600px;
     }
 
     .data-table th,
     .data-table td {
         padding: var(--space-sm);
         font-size: 12px;
-        white-space: nowrap;
     }
 
     /* Hide less important columns on mobile */
