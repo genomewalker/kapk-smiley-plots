@@ -72,7 +72,7 @@
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.2s ease, visibility 0.2s ease;
-    z-index: 1000;
+    z-index: 9999;
 }
 
 [data-tooltip]::before {
@@ -109,6 +109,19 @@
 [data-tooltip]:hover::after {
     opacity: 1;
     visibility: visible;
+}
+
+/* Table header tooltips - position below */
+.data-table th[data-tooltip]::before {
+    bottom: auto;
+    top: calc(100% + 8px);
+}
+
+.data-table th[data-tooltip]::after {
+    bottom: auto;
+    top: calc(100% + 2px);
+    border-top-color: transparent;
+    border-bottom-color: var(--text-primary);
 }
 
 /* Tooltip positioning variants */
@@ -960,6 +973,7 @@ body {
 
 .data-table th:hover {
     color: var(--text-secondary);
+    z-index: 100;
 }
 
 .data-table th.sorted {
