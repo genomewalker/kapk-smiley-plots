@@ -1728,14 +1728,14 @@
             data.sort((a, b) => {
                 let aVal = a[state.sortColumn];
                 let bVal = b[state.sortColumn];
-                if (typeof aVal === 'string') {
-                    aVal = aVal || '';
-                    bVal = bVal || '';
+                if (typeof aVal === 'string' || typeof bVal === 'string') {
+                    aVal = String(aVal || '');
+                    bVal = String(bVal || '');
                     return state.sortDirection === 'asc'
                         ? aVal.localeCompare(bVal)
                         : bVal.localeCompare(aVal);
                 }
-                return state.sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+                return state.sortDirection === 'asc' ? Number(aVal) - Number(bVal) : Number(bVal) - Number(aVal);
             });
 
             state.filteredData = data;
@@ -1751,16 +1751,23 @@
         }
 
         function getStatus(d) {
-            if (d.significance >= 3 && d.damage >= 0.05) return 'ancient';
-            if (d.significance >= 2 || d.damage >= 0.03) return 'uncertain';
+            const sig = Number(d.significance) || 0;
+            const dmg = Number(d.damage) || 0;
+            if (sig >= 3 && dmg >= 0.05) return 'ancient';
+            if (sig >= 2 || dmg >= 0.03) return 'uncertain';
             return 'modern';
         }
 
         // ========== RENDERING ==========
+        // Safe number formatting
+        const n = (v) => Number(v) || 0;
+        const fmt = (v) => n(v).toLocaleString();
+        const pct = (v) => (n(v) * 100).toFixed(1);
+
         function renderSampleList(samples) {
             const container = document.getElementById('sample-list');
             container.innerHTML = samples.map(s => {
-                const ancientPct = (s.ancient_count / s.taxa_count * 100).toFixed(0);
+                const ancientPct = (n(s.ancient_count) / n(s.taxa_count) * 100).toFixed(0);
                 return `
                     <div class="sample-item" data-sample="${s.sample}">
                         <div class="sample-item-header">
@@ -1768,7 +1775,7 @@
                             <div class="sample-damage-indicator" style="background: ${ancientPct > 20 ? 'var(--status-ancient)' : ancientPct > 5 ? 'var(--status-uncertain)' : 'var(--status-modern)'}"></div>
                         </div>
                         <div class="sample-stats">
-                            <span>Taxa: <span class="value">${s.taxa_count.toLocaleString()}</span></span>
+                            <span>Taxa: <span class="value">${fmt(s.taxa_count)}</span></span>
                             <span>Ancient: <span class="value">${ancientPct}%</span></span>
                         </div>
                     </div>
@@ -1813,13 +1820,13 @@
                             <div class="cell-damage">
                                 <div class="damage-bar">
                                     <div class="damage-bar-fill ${status === 'ancient' ? 'high' : status === 'uncertain' ? 'medium' : 'low'}"
-                                         style="width:${Math.min(d.damage * 100 / 0.4 * 100, 100)}%"></div>
+                                         style="width:${Math.min(n(d.damage) * 100 / 0.4 * 100, 100)}%"></div>
                                 </div>
-                                <span class="cell-mono">${(d.damage * 100).toFixed(1)}%</span>
+                                <span class="cell-mono">${pct(d.damage)}%</span>
                             </div>
                         </td>
-                        <td class="cell-number">${d.significance.toFixed(1)}</td>
-                        <td class="cell-number">${d.n_reads.toLocaleString()}</td>
+                        <td class="cell-number">${n(d.significance).toFixed(1)}</td>
+                        <td class="cell-number">${fmt(d.n_reads)}</td>
                         <td><span class="status-badge ${status}">${status}</span></td>
                         <td class="cell-mono" style="font-size:11px;">${d.reference}</td>
                     </tr>
@@ -1863,8 +1870,8 @@
             });
 
             const root = d3.hierarchy(hierarchy)
-                .sum(d => d.data ? d.data.n_reads : 0)
-                .sort((a, b) => b.value - a.value);
+                .sum(d => d.data ? Number(d.data.n_reads) || 0 : 0)
+                .sort((a, b) => Number(b.value) - Number(a.value));
 
             renderSunburst(root);
             updateLegend();
@@ -1931,7 +1938,7 @@
             const name = d.data.name ? d.data.name.replace(/^[dpcofgs]__/, '') : '-';
             center.innerHTML = `
                 <h4>${name}</h4>
-                <p>${d.value.toLocaleString()} reads</p>
+                <p>${fmt(d.value)} reads</p>
             `;
         }
 
@@ -1979,19 +1986,19 @@
                     <div class="stat-card highlight">
                         <div class="stat-label">Damage Status</div>
                         <div class="stat-value ${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</div>
-                        <div class="stat-sub">Based on damage ${(data.damage * 100).toFixed(1)}% and significance ${data.significance.toFixed(1)}</div>
+                        <div class="stat-sub">Based on damage ${pct(data.damage)}% and significance ${n(data.significance).toFixed(1)}</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Damage</div>
-                        <div class="stat-value">${(data.damage * 100).toFixed(2)}%</div>
+                        <div class="stat-value">${pct(data.damage)}%</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Significance</div>
-                        <div class="stat-value">${data.significance.toFixed(2)}</div>
+                        <div class="stat-value">${n(data.significance).toFixed(2)}</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Reads</div>
-                        <div class="stat-value">${data.n_reads.toLocaleString()}</div>
+                        <div class="stat-value">${fmt(data.n_reads)}</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Reference</div>
