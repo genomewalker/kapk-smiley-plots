@@ -1680,7 +1680,13 @@
                     f.fp21, f.fp22, f.fp23, f.fp24, f.fp25,
                     f.fm1, f.fm2, f.fm3, f.fm4, f.fm5, f.fm6, f.fm7, f.fm8, f.fm9, f.fm10,
                     f.fm11, f.fm12, f.fm13, f.fm14, f.fm15, f.fm16, f.fm17, f.fm18, f.fm19, f.fm20,
-                    f.fm21, f.fm22, f.fm23, f.fm24, f.fm25
+                    f.fm21, f.fm22, f.fm23, f.fm24, f.fm25,
+                    f.dp1, f.dp2, f.dp3, f.dp4, f.dp5, f.dp6, f.dp7, f.dp8, f.dp9, f.dp10,
+                    f.dp11, f.dp12, f.dp13, f.dp14, f.dp15, f.dp16, f.dp17, f.dp18, f.dp19, f.dp20,
+                    f.dp21, f.dp22, f.dp23, f.dp24, f.dp25,
+                    f.dm1, f.dm2, f.dm3, f.dm4, f.dm5, f.dm6, f.dm7, f.dm8, f.dm9, f.dm10,
+                    f.dm11, f.dm12, f.dm13, f.dm14, f.dm15, f.dm16, f.dm17, f.dm18, f.dm19, f.dm20,
+                    f.dm21, f.dm22, f.dm23, f.dm24, f.dm25
                 FROM meta m
                 JOIN freq f ON m.id = f.id
                 WHERE m.sample = '${state.currentSample}'
@@ -1989,37 +1995,88 @@
                         <div class="stat-sub">Based on damage ${pct(data.damage)}% and significance ${n(data.significance).toFixed(1)}</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Damage</div>
+                        <div class="stat-label">Damage (observed)</div>
                         <div class="stat-value">${pct(data.damage)}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Damage (MAP)</div>
+                        <div class="stat-value">${pct(data.map_damage)}%</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Significance</div>
                         <div class="stat-value">${n(data.significance).toFixed(2)}</div>
                     </div>
                     <div class="stat-card">
+                        <div class="stat-label">MAP Significance</div>
+                        <div class="stat-value">${n(data.map_significance).toFixed(2)}</div>
+                    </div>
+                    <div class="stat-card">
                         <div class="stat-label">Reads</div>
                         <div class="stat-value">${fmt(data.n_reads)}</div>
                     </div>
                     <div class="stat-card">
+                        <div class="stat-label">Mean Length</div>
+                        <div class="stat-value">${n(data.mean_length).toFixed(1)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">GC Content</div>
+                        <div class="stat-value">${pct(data.gc_content)}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Coverage</div>
+                        <div class="stat-value">${n(data.coverage_mean).toFixed(2)}x</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Breadth</div>
+                        <div class="stat-value">${pct(data.breadth)}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">ANI</div>
+                        <div class="stat-value">${pct(data.read_ani_mean)}%</div>
+                    </div>
+                    <div class="stat-card">
                         <div class="stat-label">Reference</div>
-                        <div class="stat-value" style="font-size:12px;">${data.reference}</div>
+                        <div class="stat-value" style="font-size:11px;">${data.reference}</div>
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="margin-top:var(--space-md);">
+                    <div class="stat-card">
+                        <div class="stat-label">MAP A (amplitude)</div>
+                        <div class="stat-value" style="font-size:14px;">${n(data.map_A).toFixed(4)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">MAP q (rate)</div>
+                        <div class="stat-value" style="font-size:14px;">${n(data.map_q).toFixed(4)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">MAP φ (phase)</div>
+                        <div class="stat-value" style="font-size:14px;">${n(data.map_phi).toFixed(4)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">MAP c (offset)</div>
+                        <div class="stat-value" style="font-size:14px;">${n(data.map_c).toFixed(4)}</div>
                     </div>
                 </div>
 
                 <div class="smiley-section">
                     <div class="section-header">
-                        <span class="section-title">Damage Profile</span>
+                        <span class="section-title">Damage Profile (Observed vs Model)</span>
                     </div>
                     <div class="smiley-canvas-container">
                         <canvas id="smiley-canvas"></canvas>
                         <div class="smiley-legend">
                             <div class="smiley-legend-item">
                                 <div class="smiley-legend-line observed-5p"></div>
-                                <span>5' C→T</span>
+                                <span>5' C→T (observed)</span>
                             </div>
                             <div class="smiley-legend-item">
                                 <div class="smiley-legend-line observed-3p"></div>
-                                <span>3' G→A</span>
+                                <span>3' G→A (observed)</span>
+                            </div>
+                            <div class="smiley-legend-item">
+                                <div class="smiley-legend-line" style="background:var(--damage-model);"></div>
+                                <span>Model fit</span>
                             </div>
                         </div>
                     </div>
@@ -2051,7 +2108,7 @@
             const ctx = canvas.getContext('2d');
             const container = canvas.parentElement;
             canvas.width = container.clientWidth - 32;
-            canvas.height = 200;
+            canvas.height = 220;
 
             const w = canvas.width;
             const h = canvas.height;
@@ -2063,14 +2120,21 @@
             ctx.fillStyle = '#1a1815';
             ctx.fillRect(0, 0, w, h);
 
-            // Extract frequencies
+            // Extract observed frequencies
             const fp = [], fm = [];
             for (let i = 1; i <= 25; i++) {
-                fp.push(data[`fp${i}`] || 0);
-                fm.push(data[`fm${i}`] || 0);
+                fp.push(n(data[`fp${i}`]));
+                fm.push(n(data[`fm${i}`]));
             }
 
-            const maxY = Math.max(0.35, ...fp, ...fm);
+            // Extract model predictions
+            const dp = [], dm = [];
+            for (let i = 1; i <= 25; i++) {
+                dp.push(n(data[`dp${i}`]));
+                dm.push(n(data[`dm${i}`]));
+            }
+
+            const maxY = Math.max(0.35, ...fp, ...fm, ...dp, ...dm);
             const positions = 25;
 
             // Grid
@@ -2114,7 +2178,33 @@
             const xScale = halfW / positions;
             const yScale = plotH / maxY;
 
-            // Draw 5' C->T (red)
+            // Draw 5' MODEL (purple dashed)
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath();
+            dp.forEach((v, i) => {
+                const x = padding.left + (i * xScale);
+                const y = h - padding.bottom - (v * yScale);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw 3' MODEL (purple dashed)
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath();
+            dm.forEach((v, i) => {
+                const x = padding.left + halfW + ((positions - 1 - i) * xScale);
+                const y = h - padding.bottom - (v * yScale);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw 5' OBSERVED (red solid)
             ctx.strokeStyle = '#e85d5d';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -2126,7 +2216,7 @@
             });
             ctx.stroke();
 
-            // Points
+            // Points for 5' observed
             ctx.fillStyle = '#e85d5d';
             fp.slice(0, 15).forEach((v, i) => {
                 const x = padding.left + (i * xScale);
@@ -2136,7 +2226,7 @@
                 ctx.fill();
             });
 
-            // Draw 3' G->A (blue)
+            // Draw 3' OBSERVED (blue solid)
             ctx.strokeStyle = '#5d9ee8';
             ctx.beginPath();
             fm.forEach((v, i) => {
@@ -2147,7 +2237,7 @@
             });
             ctx.stroke();
 
-            // Points
+            // Points for 3' observed
             ctx.fillStyle = '#5d9ee8';
             fm.slice(0, 15).forEach((v, i) => {
                 const x = padding.left + halfW + ((positions - 1 - i) * xScale);
