@@ -1,5 +1,5 @@
 // ========== DETAIL PANEL & SMILEY PLOT ==========
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=43';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=44';
 
 // Store current data for modal
 let currentDetailData = null;
@@ -238,7 +238,7 @@ window.trackCurrentTaxon = async function() {
 
     if (taxonName) {
         // Dynamically import compare.js to get the tracking function
-        const { trackTaxonAcrossSamples } = await import('./compare.js?v=43');
+        const { trackTaxonAcrossSamples } = await import('./compare.js?v=44');
         trackTaxonAcrossSamples(taxonName, taxonLevel);
     }
 };

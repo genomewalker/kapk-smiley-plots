@@ -1,7 +1,7 @@
 // ========== CROSS-SAMPLE COMPARISON SYSTEM ==========
 // A flagship feature for tracking taxa across multiple samples
-import { state } from './state.js?v=43';
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=43';
+import { state } from './state.js?v=44';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=44';
 
 // Global comparison basket (persists across sample switches)
 if (!window.comparisonBasket) {
@@ -57,7 +57,7 @@ export async function trackTaxonAcrossSamples(taxonName, taxonLevel = 'species')
             ORDER BY m.damage DESC
         `);
 
-        const { convertResults } = await import('./utils.js?v=43');
+        const { convertResults } = await import('./utils.js?v=44');
         const matches = convertResults(result);
 
         renderTrackingResults(taxonName, taxonLevel, matches);
@@ -1264,7 +1264,7 @@ window.clearBasket = function() {
     window.comparisonBasket = [];
     state.compareList = [];
     updateBasketIndicator();
-    import('./table.js?v=43').then(({ renderTable }) => renderTable());
+    import('./table.js?v=44').then(({ renderTable }) => renderTable());
     closeCompareModal();
 };
 
