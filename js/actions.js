@@ -8,8 +8,9 @@ export function selectSample(sample) {
     state.currentSample = sample;
     state.selectedRef = null;
 
-    // Save to URL for persistence on refresh
-    window.history.replaceState(null, '', `#sample=${encodeURIComponent(sample)}`);
+    // Save to localStorage for persistence on refresh
+    localStorage.setItem('kapk-selected-sample', sample);
+
 
     document.querySelectorAll('.sample-item').forEach(item => {
         item.classList.toggle('active', item.dataset.sample === sample);

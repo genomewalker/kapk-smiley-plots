@@ -49,24 +49,16 @@ export async function loadSamples() {
     document.getElementById('sample-count').textContent = samples.length;
     renderSampleList(samples);
 
-    // Check URL for sample to restore, otherwise select first
     if (samples.length > 0) {
         const { selectSample } = await import('./actions.js?v=31');
 
-        // Try to restore from URL hash
-        const hash = window.location.hash;
-        const match = hash.match(/sample=([^&]+)/);
-        if (match) {
-            const savedSample = decodeURIComponent(match[1]);
-            const exists = samples.find(s => s.sample === savedSample);
-            if (exists) {
-                selectSample(savedSample);
-                return;
-            }
+        // Try to restore from localStorage
+        const savedSample = localStorage.getItem('kapk-selected-sample');
+        if (savedSample && samples.find(s => s.sample === savedSample)) {
+            selectSample(savedSample);
+        } else {
+            selectSample(samples[0].sample);
         }
-
-        // Default to first sample
-        selectSample(samples[0].sample);
     }
 }
 
