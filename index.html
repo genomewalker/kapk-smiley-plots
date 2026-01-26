@@ -1635,18 +1635,48 @@
             await state.conn.query(`CREATE VIEW freq AS SELECT * FROM 'freq.parquet'`);
         }
 
-        // Helper to convert BigInt to Number
+        // Helper to convert BigInt to Number and handle DuckDB proxy objects
         function toNum(val) {
+            if (val === null || val === undefined) return val;
             if (typeof val === 'bigint') return Number(val);
             return val;
         }
 
         function convertRow(row) {
             const obj = {};
-            for (const key in row) {
-                obj[key] = toNum(row[key]);
+            // Get all enumerable properties including from prototype chain
+            const keys = Object.keys(row);
+            // Also check for common column names that might be getters
+            for (const key of keys) {
+                try {
+                    obj[key] = toNum(row[key]);
+                } catch (e) {
+                    obj[key] = row[key];
+                }
             }
             return obj;
+        }
+
+        // Convert DuckDB result to plain objects
+        function convertResults(result) {
+            const rows = result.toArray();
+            return rows.map(row => {
+                const obj = {};
+                // Use the schema to get column names
+                const schema = result.schema;
+                if (schema && schema.fields) {
+                    for (const field of schema.fields) {
+                        const key = field.name;
+                        obj[key] = toNum(row[key]);
+                    }
+                } else {
+                    // Fallback: iterate over row properties
+                    for (const key in row) {
+                        obj[key] = toNum(row[key]);
+                    }
+                }
+                return obj;
+            });
         }
 
         // ========== DATA LOADING ==========
@@ -1662,7 +1692,7 @@
                 ORDER BY sample
             `);
 
-            const samples = result.toArray().map(convertRow);
+            const samples = convertResults(result);
             document.getElementById('sample-count').textContent = samples.length;
             renderSampleList(samples);
 
@@ -1688,7 +1718,7 @@
                 WHERE m.sample = '${state.currentSample}'
             `);
 
-            state.sampleData = result.toArray().map(convertRow);
+            state.sampleData = convertResults(result);
             applyFilters();
         }
 
