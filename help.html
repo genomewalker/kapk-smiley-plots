@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=42">
+    <link rel="stylesheet" href="styles.css?v=43">
     <style>
         html, body {
             height: auto;
@@ -544,21 +544,22 @@
                     Coverage Metrics
                 </h2>
                 <p>
-                    Coverage metrics help assess the quality and reliability of the alignment to a reference genome.
+                    Coverage metrics from <a href="https://github.com/genomewalker/bam-filter" target="_blank">filterBAM</a>
+                    help assess the quality and reliability of read alignments to each reference genome.
                 </p>
 
                 <div class="metric-card">
                     <h4>Mean Coverage</h4>
                     <p>
-                        The average number of reads covering each position in the reference.
-                        Higher coverage generally means more reliable damage estimates.
+                        Average sequencing depth across all positions in the reference genome.
+                        Calculated as total aligned bases divided by reference length.
                     </p>
                 </div>
 
                 <div class="metric-card">
                     <h4>Breadth</h4>
                     <p>
-                        The proportion of the reference genome covered by at least one read.
+                        The proportion of reference bases covered by at least one aligned read.
                         Expressed as a percentage (0-100%).
                     </p>
                 </div>
@@ -566,7 +567,7 @@
                 <div class="metric-card">
                     <h4>Expected Breadth</h4>
                     <p>
-                        The theoretical breadth expected given the observed coverage, calculated as:
+                        Theoretical breadth expected given the mean coverage, assuming random read distribution:
                     </p>
                     <div class="formula">Expected Breadth = 1 - e<sup>-coverage</sup></div>
                 </div>
@@ -574,45 +575,50 @@
                 <div class="metric-card">
                     <h4>Breadth/Expected Ratio (B/E)</h4>
                     <p>
-                        Compares observed breadth to expected breadth. A ratio near 1.0 suggests
-                        coverage matches statistical expectations, indicating genuine signal.
+                        Ratio between observed and expected breadth. Helps identify cases where coverage
+                        doesn't match random distribution expectations.
                     </p>
                     <div class="interpretation">
-                        <strong>Interpretation:</strong> Ratios significantly below 1.0 may indicate
-                        uneven coverage or alignment artifacts. Values above 1.0 are unexpected.
+                        <strong>Interpretation:</strong> Values near 1.0 indicate coverage consistent with
+                        random read placement. Low ratios suggest reads are clumped in specific regions
+                        rather than spread across the genome.
                     </div>
                 </div>
 
                 <div class="metric-card">
                     <h4>Coverage Evenness</h4>
                     <p>
-                        Measures how uniformly reads are distributed across the reference genome.
-                        Based on methods described in <a href="https://www.nature.com/articles/jhg201621" target="_blank">Lander & Waterman coverage theory</a>.
+                        Measures uniformity of read distribution across the reference genome,
+                        as described in <a href="https://www.nature.com/articles/jhg201621" target="_blank">Fuentes-Pardo & Ruzzante (2017)</a>.
                     </p>
                     <div class="interpretation">
-                        <strong>Interpretation:</strong> Higher values indicate more uniform distribution.
-                        Very low evenness may suggest localized coverage (potential artifacts).
+                        <strong>Interpretation:</strong> Higher values indicate more uniform coverage.
+                        A value of 0 indicates highly localized coverage (potential artifacts or conserved regions).
                     </div>
                 </div>
 
                 <div class="metric-card">
                     <h4>Normalized Gini Coefficient</h4>
                     <p>
-                        Measures inequality in coverage distribution across positions.
-                        Originally an economics measure, adapted for genomics.
+                        Measures inequality in coverage distribution. Adapted from economics where it measures
+                        wealth inequality. Used alongside entropy to detect uneven coverage patterns.
                     </p>
                     <div class="interpretation">
-                        <strong>Interpretation:</strong> Lower values indicate more even coverage.
-                        High values suggest coverage is concentrated in specific regions.
+                        <strong>Interpretation:</strong> Higher values indicate more uneven/clumped coverage.
+                        Useful for identifying cases with high B/E ratio but localized coverage.
                     </div>
                 </div>
 
                 <div class="metric-card">
                     <h4>Normalized Entropy</h4>
                     <p>
-                        Assesses the randomness/uniformity of coverage positions.
-                        Higher entropy indicates more uniform, random distribution.
+                        Quantifies the randomness of coverage distribution across genomic positions.
+                        Complements Gini coefficient for coverage quality assessment.
                     </p>
+                    <div class="interpretation">
+                        <strong>Interpretation:</strong> Higher entropy indicates more uniform, random coverage distribution.
+                        Low entropy suggests coverage is concentrated in specific regions.
+                    </div>
                 </div>
             </section>
 

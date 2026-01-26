@@ -1,5 +1,5 @@
 // ========== DETAIL PANEL & SMILEY PLOT ==========
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=42';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=43';
 
 // Store current data for modal
 let currentDetailData = null;
@@ -82,16 +82,16 @@ export function renderDetailPanel(data) {
                 </button>
                 <div class="accordion-content">
                     <div class="mini-stats-row">
-                        <div class="mini-stat"><span class="label">Observed</span><span class="value">${pct(data.damage)}%</span></div>
-                        <div class="mini-stat"><span class="label">Model</span><span class="value">${pct(data.map_damage)}%</span></div>
-                        <div class="mini-stat"><span class="label">Signif.</span><span class="value">${n(data.significance).toFixed(2)}</span></div>
-                        <div class="mini-stat"><span class="label">Mod. Sig.</span><span class="value">${n(data.map_significance).toFixed(2)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Observed C→T damage at 5' end">Observed</span><span class="value">${pct(data.damage)}%</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Model-fitted damage estimate">Model</span><span class="value">${pct(data.map_damage)}%</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Sigmas from zero - statistical confidence">Signif.</span><span class="value">${n(data.significance).toFixed(2)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Model significance estimate">Mod. Sig.</span><span class="value">${n(data.map_significance).toFixed(2)}</span></div>
                     </div>
                     <div class="mini-stats-row">
-                        <div class="mini-stat"><span class="label">A</span><span class="value mono">${n(data.map_A).toFixed(4)}</span></div>
-                        <div class="mini-stat"><span class="label">q</span><span class="value mono">${n(data.map_q).toFixed(4)}</span></div>
-                        <div class="mini-stat"><span class="label">φ</span><span class="value mono">${n(data.map_phi).toFixed(2)}</span></div>
-                        <div class="mini-stat"><span class="label">c</span><span class="value mono">${n(data.map_c).toFixed(4)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Amplitude - background-independent damage level">A</span><span class="value mono">${n(data.map_A).toFixed(4)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Decay rate - how fast damage decreases from ends">q</span><span class="value mono">${n(data.map_q).toFixed(4)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Concentration parameter for beta-binomial distribution">φ</span><span class="value mono">${n(data.map_phi).toFixed(2)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Background - baseline substitution rate from sequencing errors">c</span><span class="value mono">${n(data.map_c).toFixed(4)}</span></div>
                     </div>
                 </div>
             </div>
@@ -112,10 +112,10 @@ export function renderDetailPanel(data) {
                 </button>
                 <div class="accordion-content">
                     <div class="mini-stats-row">
-                        <div class="mini-stat"><span class="label">Reads</span><span class="value">${fmt(data.n_reads)}</span></div>
-                        <div class="mini-stat"><span class="label">Aligns</span><span class="value">${fmt(data.n_alns)}</span></div>
-                        <div class="mini-stat"><span class="label">Length</span><span class="value">${n(data.read_length_mean).toFixed(0)}±${n(data.read_length_std).toFixed(0)}</span></div>
-                        <div class="mini-stat"><span class="label">GC</span><span class="value">${n(data.gc_content).toFixed(1)}%</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Number of reads aligned to reference">Reads</span><span class="value">${fmt(data.n_reads)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Total number of alignments">Aligns</span><span class="value">${fmt(data.n_alns)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Mean read length ± std deviation">Length</span><span class="value">${n(data.read_length_mean).toFixed(0)}±${n(data.read_length_std).toFixed(0)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Average GC content of aligned reads">GC</span><span class="value">${n(data.gc_content).toFixed(1)}%</span></div>
                     </div>
                 </div>
             </div>
@@ -136,9 +136,9 @@ export function renderDetailPanel(data) {
                 </button>
                 <div class="accordion-content">
                     <div class="mini-stats-row">
-                        <div class="mini-stat"><span class="label">Score</span><span class="value">${n(data.read_aln_score).toFixed(1)}</span></div>
-                        <div class="mini-stat"><span class="label">Edit</span><span class="value">${n(data.edit_distances).toFixed(2)}</span></div>
-                        <div class="mini-stat"><span class="label">ANI</span><span class="value">${n(data.read_ani_mean).toFixed(1)}%</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Average alignment score">Score</span><span class="value">${n(data.read_aln_score).toFixed(1)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Average edit distance (mismatches + indels)">Edit</span><span class="value">${n(data.edit_distances).toFixed(2)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Average Nucleotide Identity of aligned reads">ANI</span><span class="value">${n(data.read_ani_mean).toFixed(1)}%</span></div>
                     </div>
                 </div>
             </div>
@@ -159,16 +159,16 @@ export function renderDetailPanel(data) {
                 </button>
                 <div class="accordion-content">
                     <div class="mini-stats-row">
-                        <div class="mini-stat"><span class="label">Mean</span><span class="value">${n(data.coverage_mean).toFixed(2)}x</span></div>
-                        <div class="mini-stat"><span class="label">Breadth</span><span class="value">${pct(data.breadth)}%</span></div>
-                        <div class="mini-stat"><span class="label">Exp.</span><span class="value">${pct(data.exp_breadth)}%</span></div>
-                        <div class="mini-stat"><span class="label">Ratio</span><span class="value">${n(data.breadth_exp_ratio).toFixed(2)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Average sequencing depth across reference">Mean</span><span class="value">${n(data.coverage_mean).toFixed(2)}x</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="% of reference covered by ≥1 read">Breadth</span><span class="value">${pct(data.breadth)}%</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Expected breadth given coverage (1-e^-cov)">Exp.</span><span class="value">${pct(data.exp_breadth)}%</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Breadth/Expected ratio - near 1.0 = good">Ratio</span><span class="value">${n(data.breadth_exp_ratio).toFixed(2)}</span></div>
                     </div>
                     <div class="mini-stats-row">
-                        <div class="mini-stat"><span class="label">Bases</span><span class="value">${fmt(data.bases_covered)}</span></div>
-                        <div class="mini-stat"><span class="label">Ref Len</span><span class="value">${fmt(data.reference_length)}</span></div>
-                        <div class="mini-stat"><span class="label">Evenness</span><span class="value">${n(data.cov_evenness).toFixed(3)}</span></div>
-                        <div class="mini-stat"><span class="label">Gini</span><span class="value">${n(data.norm_gini).toFixed(3)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Number of reference bases with coverage">Bases</span><span class="value">${fmt(data.bases_covered)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Total reference genome length">Ref Len</span><span class="value">${fmt(data.reference_length)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Coverage uniformity - higher = more even">Evenness</span><span class="value">${n(data.cov_evenness).toFixed(3)}</span></div>
+                        <div class="mini-stat"><span class="label" data-tooltip="Normalized Gini - higher = more uneven/clumped">Gini</span><span class="value">${n(data.norm_gini).toFixed(3)}</span></div>
                     </div>
                 </div>
             </div>
@@ -238,7 +238,7 @@ window.trackCurrentTaxon = async function() {
 
     if (taxonName) {
         // Dynamically import compare.js to get the tracking function
-        const { trackTaxonAcrossSamples } = await import('./compare.js?v=42');
+        const { trackTaxonAcrossSamples } = await import('./compare.js?v=43');
         trackTaxonAcrossSamples(taxonName, taxonLevel);
     }
 };

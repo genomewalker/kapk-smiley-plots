@@ -1,8 +1,8 @@
 // ========== SUNBURST VISUALIZATION ==========
-import { state, domainColors } from './state.js?v=42';
-import { fmt } from './utils.js?v=42';
-import { applyFilters } from './data.js?v=42';
-import { renderTable } from './table.js?v=42';
+import { state, domainColors } from './state.js?v=43';
+import { fmt } from './utils.js?v=43';
+import { applyFilters } from './data.js?v=43';
+import { renderTable } from './table.js?v=43';
 
 export function updateFilterIndicator() {
     const filterBadge = document.getElementById('sunburst-filter-badge');
@@ -197,7 +197,7 @@ export function renderSunburst(root) {
                     updateCenterForCurrentFilter();
                 } else {
                     // Fallback to selecting that reference
-                    const { selectReference } = await import('./actions.js?v=42');
+                    const { selectReference } = await import('./actions.js?v=43');
                     selectReference(d.data.data.id);
                 }
             } else if (d.data.name && d.data.name !== 'root') {
