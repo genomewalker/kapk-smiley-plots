@@ -1,7 +1,7 @@
 // ========== CROSS-SAMPLE COMPARISON SYSTEM ==========
 // A flagship feature for tracking taxa across multiple samples
-import { state } from './state.js?v=37';
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=37';
+import { state } from './state.js?v=38';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=38';
 
 // Global comparison basket (persists across sample switches)
 if (!window.comparisonBasket) {
@@ -57,7 +57,7 @@ export async function trackTaxonAcrossSamples(taxonName, taxonLevel = 'species')
             ORDER BY m.damage DESC
         `);
 
-        const { convertResults } = await import('./utils.js?v=37');
+        const { convertResults } = await import('./utils.js?v=38');
         const matches = convertResults(result);
 
         renderTrackingResults(taxonName, taxonLevel, matches);
@@ -189,7 +189,7 @@ function renderTrackingResults(taxonName, taxonLevel, matches) {
                                     <th data-sort="breadth_exp_ratio" class="sortable">B/E <span class="sort-icon">↕</span></th>
                                     <th data-sort="norm_entropy" class="sortable">Entropy <span class="sort-icon">↕</span></th>
                                     <th data-sort="norm_gini" class="sortable">Gini <span class="sort-icon">↕</span></th>
-                                    <th data-sort="ani" class="sortable">ANI <span class="sort-icon">↕</span></th>
+                                    <th data-sort="read_ani_mean" class="sortable">ANI <span class="sort-icon">↕</span></th>
                                     <th data-sort="gc_content" class="sortable">GC <span class="sort-icon">↕</span></th>
                                 </tr>
                             </thead>
@@ -212,7 +212,7 @@ function renderTrackingResults(taxonName, taxonLevel, matches) {
                                             <td class="mono">${n(d.breadth_exp_ratio).toFixed(2)}</td>
                                             <td class="mono">${n(d.norm_entropy).toFixed(3)}</td>
                                             <td class="mono">${n(d.norm_gini).toFixed(3)}</td>
-                                            <td class="mono">${n(d.ani).toFixed(1)}%</td>
+                                            <td class="mono">${n(d.read_ani_mean).toFixed(1)}%</td>
                                             <td class="mono">${pct(d.gc_content)}%</td>
                                         </tr>
                                     `;
@@ -329,7 +329,7 @@ function setupTrackingTableSorting(matches, taxonName, taxonLevel) {
                         <td class="mono">${n(d.breadth_exp_ratio).toFixed(2)}</td>
                         <td class="mono">${n(d.norm_entropy).toFixed(3)}</td>
                         <td class="mono">${n(d.norm_gini).toFixed(3)}</td>
-                        <td class="mono">${n(d.ani).toFixed(1)}%</td>
+                        <td class="mono">${n(d.read_ani_mean).toFixed(1)}%</td>
                         <td class="mono">${pct(d.gc_content)}%</td>
                     </tr>
                 `;
@@ -862,7 +862,7 @@ export function openComparePanel() {
                                         <td class="mono">${n(d.breadth_exp_ratio).toFixed(2)}</td>
                                         <td class="mono">${n(d.norm_entropy).toFixed(3)}</td>
                                         <td class="mono">${n(d.norm_gini).toFixed(3)}</td>
-                                        <td class="mono">${n(d.ani).toFixed(1)}%</td>
+                                        <td class="mono">${n(d.read_ani_mean).toFixed(1)}%</td>
                                         <td class="mono">${pct(d.gc_content)}%</td>
                                         <td class="action-cell">
                                             <button class="row-action track" onclick="window.trackFromCompare('${escapeHtml(d.species || d.genus)}', '${d.species ? 'species' : 'genus'}')" title="Track across samples">
@@ -1264,7 +1264,7 @@ window.clearBasket = function() {
     window.comparisonBasket = [];
     state.compareList = [];
     updateBasketIndicator();
-    import('./table.js?v=37').then(({ renderTable }) => renderTable());
+    import('./table.js?v=38').then(({ renderTable }) => renderTable());
     closeCompareModal();
 };
 
@@ -1308,7 +1308,7 @@ window.exportComparison = function() {
         'sample', 'reference', 'domain', 'phylum', 'class', 'order', 'family', 'genus', 'species',
         'damage', 'significance', 'n_reads', 'status',
         'model_A', 'model_q', 'model_phi', 'model_c',
-        'coverage_mean', 'breadth', 'breadth_exp_ratio', 'norm_entropy', 'norm_gini', 'ani', 'gc_content'
+        'coverage_mean', 'breadth', 'breadth_exp_ratio', 'norm_entropy', 'norm_gini', 'read_ani_mean', 'gc_content'
     ];
 
     const rows = compareData.map(d => [
@@ -1334,7 +1334,7 @@ window.exportComparison = function() {
         d.breadth_exp_ratio,
         d.norm_entropy,
         d.norm_gini,
-        d.ani,
+        d.read_ani_mean,
         d.gc_content
     ]);
 
