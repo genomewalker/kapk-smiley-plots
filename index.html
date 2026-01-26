@@ -1635,6 +1635,20 @@
             await state.conn.query(`CREATE VIEW freq AS SELECT * FROM 'freq.parquet'`);
         }
 
+        // Helper to convert BigInt to Number
+        function toNum(val) {
+            if (typeof val === 'bigint') return Number(val);
+            return val;
+        }
+
+        function convertRow(row) {
+            const obj = {};
+            for (const key in row) {
+                obj[key] = toNum(row[key]);
+            }
+            return obj;
+        }
+
         // ========== DATA LOADING ==========
         async function loadSamples() {
             const result = await state.conn.query(`
@@ -1648,7 +1662,7 @@
                 ORDER BY sample
             `);
 
-            const samples = result.toArray();
+            const samples = result.toArray().map(convertRow);
             document.getElementById('sample-count').textContent = samples.length;
             renderSampleList(samples);
 
@@ -1674,7 +1688,7 @@
                 WHERE m.sample = '${state.currentSample}'
             `);
 
-            state.sampleData = result.toArray();
+            state.sampleData = result.toArray().map(convertRow);
             applyFilters();
         }
 
