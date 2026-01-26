@@ -1,7 +1,7 @@
 // ========== UI EVENT LISTENERS ==========
-import { state } from './state.js?v=34';
-import { applyFilters, exportData } from './data.js?v=34';
-import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=34';
+import { state } from './state.js?v=35';
+import { applyFilters, exportData } from './data.js?v=35';
+import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=35';
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -132,7 +132,7 @@ window.searchSelectTaxon = function(taxonName, level) {
         .replace(/&amp;/g, '&');
 
     // Open tracking modal for this taxon
-    import('./compare.js?v=34').then(({ trackTaxonAcrossSamples }) => {
+    import('./compare.js?v=35').then(({ trackTaxonAcrossSamples }) => {
         trackTaxonAcrossSamples(unescaped, level);
     });
 };
@@ -268,7 +268,7 @@ export function setupEventListeners() {
 
     // Compare button
     document.getElementById('compare-btn').addEventListener('click', () => {
-        import('./compare.js?v=34').then(({ openComparePanel }) => {
+        import('./compare.js?v=35').then(({ openComparePanel }) => {
             openComparePanel();
         });
     });
