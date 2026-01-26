@@ -1635,48 +1635,16 @@
             await state.conn.query(`CREATE VIEW freq AS SELECT * FROM 'freq.parquet'`);
         }
 
-        // Helper to convert BigInt to Number and handle DuckDB proxy objects
-        function toNum(val) {
-            if (val === null || val === undefined) return val;
-            if (typeof val === 'bigint') return Number(val);
-            return val;
-        }
-
-        function convertRow(row) {
-            const obj = {};
-            // Get all enumerable properties including from prototype chain
-            const keys = Object.keys(row);
-            // Also check for common column names that might be getters
-            for (const key of keys) {
-                try {
-                    obj[key] = toNum(row[key]);
-                } catch (e) {
-                    obj[key] = row[key];
-                }
-            }
-            return obj;
-        }
-
-        // Convert DuckDB result to plain objects
+        // Convert DuckDB result to plain objects with BigInt handling
         function convertResults(result) {
-            const rows = result.toArray();
-            return rows.map(row => {
-                const obj = {};
-                // Use the schema to get column names
-                const schema = result.schema;
-                if (schema && schema.fields) {
-                    for (const field of schema.fields) {
-                        const key = field.name;
-                        obj[key] = toNum(row[key]);
-                    }
-                } else {
-                    // Fallback: iterate over row properties
-                    for (const key in row) {
-                        obj[key] = toNum(row[key]);
-                    }
+            // Use JSON serialization with BigInt replacer
+            const json = JSON.stringify(result.toArray(), (key, value) => {
+                if (typeof value === 'bigint') {
+                    return Number(value);
                 }
-                return obj;
+                return value;
             });
+            return JSON.parse(json);
         }
 
         // ========== DATA LOADING ==========
