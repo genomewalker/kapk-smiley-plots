@@ -1,8 +1,8 @@
 // ========== USER ACTIONS ==========
-import { state } from './state.js?v=36';
-import { loadSampleData } from './data.js?v=36';
-import { renderTable } from './table.js?v=36';
-import { renderDetailPanel } from './detail-panel.js?v=36';
+import { state } from './state.js?v=37';
+import { loadSampleData } from './data.js?v=37';
+import { renderTable } from './table.js?v=37';
+import { renderDetailPanel } from './detail-panel.js?v=37';
 
 export function selectSample(sample) {
     state.currentSample = sample;
