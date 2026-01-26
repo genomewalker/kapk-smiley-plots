@@ -4199,6 +4199,21 @@ body {
 
 @media (max-width: 1024px) {
     .workspace {
+        grid-template-columns: 220px 1fr 360px;
+    }
+
+    .workspace.detail-closed {
+        grid-template-columns: 220px 1fr;
+    }
+}
+
+/* ========== SMALL TABLET (< 900px) - Detail panel becomes overlay ========== */
+@media (max-width: 900px) {
+    .workspace {
+        grid-template-columns: 220px 1fr;
+    }
+
+    .workspace.detail-closed {
         grid-template-columns: 220px 1fr;
     }
 

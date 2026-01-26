@@ -1,8 +1,8 @@
 // ========== USER ACTIONS ==========
-import { state } from './state.js?v=33';
-import { loadSampleData } from './data.js?v=33';
-import { renderTable } from './table.js?v=33';
-import { renderDetailPanel } from './detail-panel.js?v=33';
+import { state } from './state.js?v=34';
+import { loadSampleData } from './data.js?v=34';
+import { renderTable } from './table.js?v=34';
+import { renderDetailPanel } from './detail-panel.js?v=34';
 
 export function selectSample(sample) {
     state.currentSample = sample;
@@ -42,6 +42,12 @@ export function selectReference(id) {
 
     renderDetailPanel(data);
     document.getElementById('status-selected').textContent = '1';
+
+    // Show detail panel (for overlay mode on smaller screens)
+    const detailPanel = document.getElementById('detail-panel');
+    const workspace = document.getElementById('workspace');
+    detailPanel.classList.add('open');
+    workspace.classList.remove('detail-closed');
 }
 
 export function toggleCompare(id) {

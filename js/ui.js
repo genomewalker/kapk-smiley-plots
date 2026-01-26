@@ -1,7 +1,7 @@
 // ========== UI EVENT LISTENERS ==========
-import { state } from './state.js?v=33';
-import { applyFilters, exportData } from './data.js?v=33';
-import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=33';
+import { state } from './state.js?v=34';
+import { applyFilters, exportData } from './data.js?v=34';
+import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=34';
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -132,7 +132,7 @@ window.searchSelectTaxon = function(taxonName, level) {
         .replace(/&amp;/g, '&');
 
     // Open tracking modal for this taxon
-    import('./compare.js?v=33').then(({ trackTaxonAcrossSamples }) => {
+    import('./compare.js?v=34').then(({ trackTaxonAcrossSamples }) => {
         trackTaxonAcrossSamples(unescaped, level);
     });
 };
@@ -210,6 +210,9 @@ export function setupEventListeners() {
                 <p>Click a row in the table to view damage details</p>
             </div>
         `;
+        // Hide detail panel (for overlay mode on smaller screens)
+        document.getElementById('detail-panel').classList.remove('open');
+        document.getElementById('workspace').classList.add('detail-closed');
     });
 
     // Command palette
@@ -265,7 +268,7 @@ export function setupEventListeners() {
 
     // Compare button
     document.getElementById('compare-btn').addEventListener('click', () => {
-        import('./compare.js?v=33').then(({ openComparePanel }) => {
+        import('./compare.js?v=34').then(({ openComparePanel }) => {
             openComparePanel();
         });
     });
