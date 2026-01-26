@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles.css?v=41">
+    <link rel="stylesheet" href="../styles.css?v=42">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
@@ -157,10 +157,10 @@
                                     <th data-sort="genus">Genus <span class="sort-icon">↕</span></th>
                                     <th data-sort="family">Family <span class="sort-icon">↕</span></th>
                                     <th data-sort="phylum">Phylum <span class="sort-icon">↕</span></th>
-                                    <th data-sort="damage" class="sorted" data-tooltip="Estimated proportion of reads showing ancient DNA damage (C→T at 5', G→A at 3'). Higher values indicate stronger evidence for ancient origin.">Damage <span class="sort-icon">↓</span></th>
-                                    <th data-sort="significance" data-tooltip="Number of standard deviations the damage estimate is from zero. Values >3 indicate strong statistical confidence.">Signif. <span class="sort-icon">↕</span></th>
-                                    <th data-sort="n_reads" data-tooltip="Total number of sequencing reads aligned to this reference.">Reads <span class="sort-icon">↕</span></th>
-                                    <th data-tooltip="Classification based on damage level and significance. 'Damaged' indicates authentic ancient DNA patterns.">Status</th>
+                                    <th data-sort="damage" class="sorted">Damage <span class="sort-icon">↓</span><span class="col-hint" data-tooltip="Estimated C→T damage at 5' end. Higher = more ancient.">?</span></th>
+                                    <th data-sort="significance">Signif. <span class="sort-icon">↕</span><span class="col-hint" data-tooltip="Statistical confidence (sigmas from zero). >3 = strong evidence.">?</span></th>
+                                    <th data-sort="n_reads">Reads <span class="sort-icon">↕</span></th>
+                                    <th>Status <span class="col-hint" data-tooltip="Damaged = significant ancient DNA patterns detected.">?</span></th>
                                     <th data-sort="reference">Reference <span class="sort-icon">↕</span></th>
                                 </tr>
                             </thead>
@@ -236,6 +236,6 @@
         </div>
     </div>
 
-    <script type="module" src="../js/app.js?v=41"></script>
+    <script type="module" src="../js/app.js?v=42"></script>
 </body>
 </html>

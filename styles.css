@@ -973,7 +973,46 @@ body {
 
 .data-table th:hover {
     color: var(--text-secondary);
-    z-index: 100;
+}
+
+/* Column hint icons */
+.col-hint {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    margin-left: 4px;
+    background: var(--bg-hover);
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    cursor: help;
+    vertical-align: middle;
+    position: relative;
+}
+
+.col-hint:hover {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.col-hint[data-tooltip]::before {
+    bottom: auto;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+}
+
+.col-hint[data-tooltip]::after {
+    bottom: auto;
+    top: calc(100% + 2px);
+    border-top-color: transparent;
+    border-bottom-color: var(--text-primary);
 }
 
 .data-table th.sorted {
