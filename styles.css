@@ -1203,38 +1203,6 @@ body {
     background: var(--status-non-damaged);
 }
 
-/* Mini smiley plot (inline in table) */
-.mini-smiley {
-    width: 100px;
-    height: 32px;
-    display: flex;
-    align-items: flex-end;
-    gap: 1px;
-    padding: 2px;
-    background: var(--bg-base);
-    border-radius: var(--radius-sm);
-}
-
-.mini-smiley-bar {
-    flex: 1;
-    min-width: 3px;
-    border-radius: 1px 1px 0 0;
-    transition: height 0.2s ease;
-}
-
-.mini-smiley-bar.five-prime {
-    background: var(--damage-5prime);
-}
-
-.mini-smiley-bar.three-prime {
-    background: var(--damage-3prime);
-}
-
-.mini-smiley-bar.model {
-    background: var(--damage-model);
-    opacity: 0.6;
-}
-
 /* Status badge */
 .status-badge {
     display: inline-flex;

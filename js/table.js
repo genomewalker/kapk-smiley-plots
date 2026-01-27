@@ -1,7 +1,7 @@
 // ========== TABLE RENDERING ==========
-import { state, domainColors } from './state.js?v=48';
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=48';
-import { renderSunburst, updateLegend } from './sunburst.js?v=48';
+import { state, domainColors } from './state.js?v=49';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=49';
+import { renderSunburst, updateLegend } from './sunburst.js?v=49';
 
 export function renderSampleList(samples) {
     const container = document.getElementById('sample-list');
@@ -24,43 +24,10 @@ export function renderSampleList(samples) {
 
     container.querySelectorAll('.sample-item').forEach(item => {
         item.addEventListener('click', async () => {
-            const { selectSample } = await import('./actions.js?v=48');
+            const { selectSample } = await import('./actions.js?v=49');
             selectSample(item.dataset.sample);
         });
     });
-}
-
-// Generate mini smiley SVG for inline display
-function renderMiniSmiley(d) {
-    // Get damage values at each position (simplified - using damage as proxy)
-    const damage = n(d.damage) || 0;
-    const significance = n(d.significance) || 0;
-    const isDamaged = damage >= 0.11 && significance >= 2;
-
-    // Create simplified damage profile visualization
-    // 5' end shows higher damage, 3' end shows lower (typical pattern)
-    const fivePrime = isDamaged ? damage : damage * 0.3;
-    const threePrime = isDamaged ? damage * 0.6 : damage * 0.2;
-
-    // Generate 10 bars representing positions
-    const bars = [];
-    for (let i = 0; i < 10; i++) {
-        let height, color;
-        if (i < 5) {
-            // 5' end - damage decreases from edge
-            const factor = 1 - (i / 5);
-            height = fivePrime * factor * 100;
-            color = 'five-prime';
-        } else {
-            // 3' end - damage increases toward edge
-            const factor = (i - 4) / 5;
-            height = threePrime * factor * 100;
-            color = 'three-prime';
-        }
-        bars.push(`<div class="mini-smiley-bar ${color}" style="height:${Math.max(height, 2)}%"></div>`);
-    }
-
-    return `<div class="mini-smiley">${bars.join('')}</div>`;
 }
 
 export function renderTable() {
@@ -88,12 +55,13 @@ export function renderTable() {
                     <div class="compare-checkbox ${isComparing ? 'checked' : ''}" data-id="${d.id}"></div>
                 </td>
                 <td class="cell-taxonomy" title="${cleanName(d.species)}">${cleanName(d.species)}</td>
+                <td class="cell-taxonomy" title="${cleanName(d.genus)}">${cleanName(d.genus)}</td>
+                <td class="cell-taxonomy" title="${cleanName(d.family)}">${cleanName(d.family)}</td>
                 <td>
                     <div class="cell-damage">
                         <span class="cell-mono">${pct(d.damage)}%</span>
                     </div>
                 </td>
-                <td>${renderMiniSmiley(d)}</td>
                 <td class="cell-number">${n(d.significance).toFixed(1)}</td>
                 <td class="cell-number">${fmt(d.n_reads)}</td>
                 <td><span class="status-badge ${status}">${status}</span></td>
@@ -104,7 +72,7 @@ export function renderTable() {
     // Row click handlers
     tbody.querySelectorAll('tr').forEach(row => {
         row.addEventListener('click', async (e) => {
-            const { selectReference, toggleCompare } = await import('./actions.js?v=48');
+            const { selectReference, toggleCompare } = await import('./actions.js?v=49');
             if (e.target.closest('.compare-checkbox')) {
                 toggleCompare(Number(row.dataset.id));
             } else {
@@ -199,17 +167,17 @@ function showContextMenu(x, y, data) {
             const taxon = item.dataset.taxon;
 
             if (action === 'track-species' || action === 'track-genus' || action === 'track-family') {
-                const { trackTaxonAcrossSamples } = await import('./compare.js?v=48');
+                const { trackTaxonAcrossSamples } = await import('./compare.js?v=49');
                 const level = action.replace('track-', '');
                 trackTaxonAcrossSamples(taxon, level);
             } else if (action === 'add-compare') {
-                const { addToBasket } = await import('./compare.js?v=48');
+                const { addToBasket } = await import('./compare.js?v=49');
                 // Note: addToBasket is on window, but we can also use direct import
                 if (window.addToBasket) {
                     window.addToBasket(data.id, state.currentSample);
                 }
             } else if (action === 'view-details') {
-                const { selectReference } = await import('./actions.js?v=48');
+                const { selectReference } = await import('./actions.js?v=49');
                 selectReference(data.id);
             }
 
