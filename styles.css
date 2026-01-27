@@ -643,7 +643,8 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: auto;
+    min-height: 0;
 }
 
 /* ========== SUNBURST VISUALIZATION ========== */
@@ -651,6 +652,7 @@ body {
     background: linear-gradient(180deg, var(--bg-deep) 0%, #f5f4f2 100%);
     border-bottom: 1px solid var(--border-subtle);
     position: relative;
+    flex-shrink: 0;
 }
 
 .sunburst-container {
@@ -4619,16 +4621,24 @@ body {
         box-shadow: var(--shadow-lg);
     }
 
-    /* Main panel takes full width with proper flex constraints */
+    /* Main panel - scrollable on mobile */
     .main-panel {
         min-height: 0;
         height: calc(100vh - 56px - 32px);
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
+    /* Content area scrolls on mobile */
     .content-area {
+        flex: 1;
         min-height: 0;
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-direction: column;
     }
 
     /* Toolbar - stacked filters */
@@ -4636,6 +4646,7 @@ body {
         flex-wrap: wrap;
         gap: var(--space-sm);
         padding: var(--space-sm) var(--space-md);
+        flex-shrink: 0;
     }
 
     .toolbar-group {
@@ -4675,27 +4686,77 @@ body {
         margin-left: auto;
     }
 
-    /* Sunburst - responsive sizing */
+    /* Sunburst - collapsible and compact on mobile */
     .sunburst-section {
-        max-height: 50vh;
+        flex-shrink: 0;
+        max-height: none;
+        border-bottom: 1px solid var(--border-subtle);
+        position: relative;
+    }
+
+    .sunburst-section::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 24px;
+        background: linear-gradient(to bottom, transparent, var(--bg-base));
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity var(--transition-base);
     }
 
     .sunburst-container {
-        max-height: 250px;
-        min-height: 200px;
+        max-height: 180px;
+        min-height: 150px;
+        transition: max-height var(--transition-slow), min-height var(--transition-slow), padding var(--transition-slow);
+    }
+
+    .sunburst-container.collapsed {
+        max-height: 0;
+        min-height: 0;
+        padding: 0;
+        overflow: hidden;
     }
 
     .sunburst-container svg {
-        max-width: 220px;
-        max-height: 220px;
+        max-width: 160px;
+        max-height: 160px;
+    }
+
+    .sunburst-center {
+        width: 60px;
+        height: 60px;
     }
 
     .sunburst-center h4 {
-        font-size: 12px;
+        font-size: 10px;
     }
 
     .sunburst-center p {
-        font-size: 10px;
+        font-size: 8px;
+    }
+
+    .sunburst-toggle {
+        display: flex !important;
+    }
+
+    .sunburst-toggle svg {
+        transition: transform var(--transition-base);
+    }
+
+    .sunburst-container.collapsed ~ .sunburst-toolbar .sunburst-toggle svg,
+    .sunburst-section.collapsed .sunburst-toggle svg {
+        transform: rotate(180deg);
+    }
+
+    /* Table - takes remaining space with minimum height for visibility */
+    .table-container {
+        flex: 1 1 auto;
+        min-height: 250px;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .sunburst-toolbar {
@@ -4714,14 +4775,6 @@ body {
     .sunburst-legend {
         font-size: 10px;
         gap: var(--space-sm);
-    }
-
-    /* Table - horizontal scroll within container */
-    .table-container {
-        flex: 1;
-        min-height: 0;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
     }
 
     .data-table {
