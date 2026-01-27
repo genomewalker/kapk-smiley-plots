@@ -1,7 +1,7 @@
 // ========== MAIN APPLICATION ENTRY POINT ==========
-import { initDuckDB, loadSamples } from './data.js?v=47';
-import { setupEventListeners } from './ui.js?v=47';
-import { goBackOneLevel, clearAllFilters, navigateToFilterLevel } from './sunburst.js?v=47';
+import { initDuckDB, loadSamples } from './data.js?v=48';
+import { setupEventListeners } from './ui.js?v=48';
+import { goBackOneLevel, clearAllFilters, navigateToFilterLevel } from './sunburst.js?v=48';
 
 // Make navigation functions globally accessible for onclick handlers
 window.goBackOneLevel = goBackOneLevel;

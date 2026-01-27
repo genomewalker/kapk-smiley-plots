@@ -1,7 +1,7 @@
 // ========== UI EVENT LISTENERS ==========
-import { state } from './state.js?v=47';
-import { applyFilters, exportData } from './data.js?v=47';
-import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=47';
+import { state } from './state.js?v=48';
+import { applyFilters, exportData } from './data.js?v=48';
+import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=48';
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -132,7 +132,7 @@ window.searchSelectTaxon = function(taxonName, level) {
         .replace(/&amp;/g, '&');
 
     // Open tracking modal for this taxon
-    import('./compare.js?v=47').then(({ trackTaxonAcrossSamples }) => {
+    import('./compare.js?v=48').then(({ trackTaxonAcrossSamples }) => {
         trackTaxonAcrossSamples(unescaped, level);
     });
 };
@@ -182,38 +182,13 @@ export function setupEventListeners() {
         });
     });
 
-    // View toggle (hidden on mobile, but kept for desktop)
-    document.querySelectorAll('.view-toggle button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            state.showSunburst = btn.dataset.view === 'sunburst';
-            document.getElementById('sunburst-panel')?.classList.toggle('collapsed', !state.showSunburst);
-        });
-    });
-
-    // Sunburst panel toggle
+    // Sunburst section toggle
     document.getElementById('sunburst-toggle')?.addEventListener('click', () => {
         state.showSunburst = !state.showSunburst;
-        document.getElementById('sunburst-panel')?.classList.toggle('collapsed', !state.showSunburst);
+        document.querySelector('.sunburst-section')?.classList.toggle('collapsed', !state.showSunburst);
     });
 
-    // Detail close
-    document.getElementById('detail-close').addEventListener('click', () => {
-        state.selectedRef = null;
-        document.querySelectorAll('#table-body tr').forEach(row => row.classList.remove('selected'));
-        document.getElementById('status-selected').textContent = '0';
-        document.getElementById('detail-content').innerHTML = `
-            <div class="empty-state">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-                <h4>No reference selected</h4>
-                <p>Click a row in the table to view damage details</p>
-            </div>
-        `;
-        // Hide detail panel (for overlay mode on smaller screens)
-        document.getElementById('detail-panel').classList.remove('open');
-        document.getElementById('workspace').classList.add('detail-closed');
-    });
+    // Detail section is now embedded - no close button needed
 
     // Command palette
     const overlay = document.getElementById('command-overlay');
@@ -268,7 +243,7 @@ export function setupEventListeners() {
 
     // Compare button
     document.getElementById('compare-btn').addEventListener('click', () => {
-        import('./compare.js?v=47').then(({ openComparePanel }) => {
+        import('./compare.js?v=48').then(({ openComparePanel }) => {
             openComparePanel();
         });
     });

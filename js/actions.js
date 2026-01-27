@@ -1,8 +1,8 @@
 // ========== USER ACTIONS ==========
-import { state } from './state.js?v=47';
-import { loadSampleData } from './data.js?v=47';
-import { renderTable } from './table.js?v=47';
-import { renderDetailPanel } from './detail-panel.js?v=47';
+import { state } from './state.js?v=48';
+import { loadSampleData } from './data.js?v=48';
+import { renderTable } from './table.js?v=48';
+import { renderDetailPanel } from './detail-panel.js?v=48';
 
 export function selectSample(sample) {
     state.currentSample = sample;
@@ -11,19 +11,17 @@ export function selectSample(sample) {
     // Save to localStorage for persistence on refresh
     localStorage.setItem('kapk-selected-sample', sample);
 
-
     document.querySelectorAll('.sample-item').forEach(item => {
         item.classList.toggle('active', item.dataset.sample === sample);
     });
 
     document.getElementById('status-sample').textContent = sample;
 
-    // Reset detail panel
+    // Reset detail section
+    document.getElementById('detail-species').textContent = 'Select a taxon';
     document.getElementById('detail-content').innerHTML = `
-        <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-            <h4>No reference selected</h4>
-            <p>Click a row in the table to view damage details</p>
+        <div class="empty-state small">
+            <p>Click a row to view damage profile</p>
         </div>
     `;
 
@@ -42,12 +40,6 @@ export function selectReference(id) {
 
     renderDetailPanel(data);
     document.getElementById('status-selected').textContent = '1';
-
-    // Show detail panel (for overlay mode on smaller screens)
-    const detailPanel = document.getElementById('detail-panel');
-    const workspace = document.getElementById('workspace');
-    detailPanel.classList.add('open');
-    workspace.classList.remove('detail-closed');
 }
 
 export function toggleCompare(id) {

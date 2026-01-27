@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles.css?v=47">
+    <link rel="stylesheet" href="../styles.css?v=48">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
@@ -115,33 +115,48 @@
 
                 <!-- Content area - horizontal split -->
                 <div class="content-area">
-                    <!-- Sunburst navigation panel -->
-                    <div class="sunburst-panel" id="sunburst-panel">
-                        <div class="sunburst-panel-header">
-                            <h3>Taxonomy</h3>
-                            <button class="btn btn-ghost btn-icon sunburst-toggle" id="sunburst-toggle" title="Toggle sunburst">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                            </button>
-                        </div>
-                        <div class="sunburst-container" id="sunburst-container">
-                            <svg id="sunburst"></svg>
-                            <div class="sunburst-center" id="sunburst-center">
-                                <button class="center-back-btn" id="center-back-btn" title="Go back" onclick="goBackOneLevel()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    <!-- Left panel: Sunburst + Details -->
+                    <div class="left-panel" id="left-panel">
+                        <!-- Sunburst section -->
+                        <div class="sunburst-section">
+                            <div class="section-header">
+                                <h3>Taxonomy</h3>
+                                <button class="btn btn-ghost btn-icon sunburst-toggle" id="sunburst-toggle" title="Toggle sunburst">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                                 </button>
-                                <h4>All Taxa</h4>
-                                <p>Click to filter</p>
+                            </div>
+                            <div class="sunburst-container" id="sunburst-container">
+                                <svg id="sunburst"></svg>
+                                <div class="sunburst-center" id="sunburst-center">
+                                    <button class="center-back-btn" id="center-back-btn" title="Go back" onclick="goBackOneLevel()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                                    </button>
+                                    <h4>All Taxa</h4>
+                                    <p>Click to filter</p>
+                                </div>
+                            </div>
+                            <div class="sunburst-info">
+                                <div class="sunburst-breadcrumb" id="sunburst-breadcrumb">
+                                    <span>Hover to explore</span>
+                                </div>
+                                <div class="sunburst-filter-badge" id="sunburst-filter-badge">
+                                    <span class="filter-path" id="filter-path-text"></span>
+                                    <button class="filter-clear" onclick="clearAllFilters()" title="Clear filter">✕</button>
+                                </div>
+                                <div class="sunburst-legend" id="sunburst-legend"></div>
                             </div>
                         </div>
-                        <div class="sunburst-info">
-                            <div class="sunburst-breadcrumb" id="sunburst-breadcrumb">
-                                <span>Hover to explore</span>
+
+                        <!-- Details section -->
+                        <div class="detail-section" id="detail-panel">
+                            <div class="section-header">
+                                <h3 id="detail-species">Select a taxon</h3>
                             </div>
-                            <div class="sunburst-filter-badge" id="sunburst-filter-badge">
-                                <span class="filter-path" id="filter-path-text"></span>
-                                <button class="filter-clear" onclick="clearAllFilters()" title="Clear filter">✕</button>
+                            <div class="detail-content" id="detail-content">
+                                <div class="empty-state small">
+                                    <p>Click a row to view damage profile</p>
+                                </div>
                             </div>
-                            <div class="sunburst-legend" id="sunburst-legend"></div>
                         </div>
                     </div>
 
@@ -153,14 +168,11 @@
                                     <tr>
                                         <th style="width:40px"></th>
                                         <th data-sort="species">Species <span class="sort-icon">↕</span></th>
-                                        <th data-sort="genus">Genus <span class="sort-icon">↕</span></th>
-                                        <th data-sort="family">Family <span class="sort-icon">↕</span></th>
-                                        <th data-sort="phylum">Phylum <span class="sort-icon">↕</span></th>
-                                        <th data-sort="damage" class="sorted">Damage <span class="sort-icon">↓</span><span class="col-hint" data-tooltip="Estimated C→T damage at 5' end. Higher = more ancient.">?</span></th>
-                                        <th data-sort="significance">Signif. <span class="sort-icon">↕</span><span class="col-hint" data-tooltip="Statistical confidence (sigmas from zero). >3 = strong evidence.">?</span></th>
+                                        <th data-sort="damage" class="sorted">Damage <span class="sort-icon">↓</span></th>
+                                        <th style="width:120px">Profile</th>
+                                        <th data-sort="significance">Signif. <span class="sort-icon">↕</span></th>
                                         <th data-sort="n_reads">Reads <span class="sort-icon">↕</span></th>
-                                        <th>Status <span class="col-hint" data-tooltip="Damaged = significant ancient DNA patterns detected.">?</span></th>
-                                        <th data-sort="reference">Reference <span class="sort-icon">↕</span></th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-body">
@@ -170,27 +182,6 @@
                     </div>
                 </div>
             </main>
-
-            <!-- Detail panel -->
-            <aside class="detail-panel" id="detail-panel">
-                <div class="detail-header">
-                    <div class="detail-title">
-                        <h3 id="detail-species">Select a reference</h3>
-                        <div class="taxonomy-path" id="detail-taxonomy-path">-</div>
-                    </div>
-                    <button class="detail-close" id="detail-close">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                </div>
-
-                <div class="detail-content" id="detail-content">
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-                        <h4>No reference selected</h4>
-                        <p>Click a row in the table to view damage details</p>
-                    </div>
-                </div>
-            </aside>
         </div>
 
         <!-- Status bar -->
@@ -236,6 +227,6 @@
         </div>
     </div>
 
-    <script type="module" src="../js/app.js?v=47"></script>
+    <script type="module" src="../js/app.js?v=48"></script>
 </body>
 </html>

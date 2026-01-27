@@ -1,5 +1,5 @@
 // ========== DETAIL PANEL & SMILEY PLOT ==========
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=47';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=48';
 
 // Store current data for modal
 let currentDetailData = null;
@@ -9,59 +9,42 @@ export function renderDetailPanel(data) {
     const content = document.getElementById('detail-content');
     const status = getStatus(data);
 
-    document.getElementById('detail-species').textContent = cleanName(data.species) || cleanName(data.genus) || data.reference;
-    document.getElementById('detail-taxonomy-path').textContent =
-        [data.domain, data.phylum, data.class_, data.order_, data.family, data.genus]
-            .filter(Boolean)
-            .map(cleanName)
-            .join(' › ');
+    // Update header with species name
+    const speciesName = cleanName(data.species) || cleanName(data.genus) || data.reference;
+    document.getElementById('detail-species').textContent = speciesName;
 
     content.innerHTML = `
-        <!-- Hero Section: Smiley Plot + Key Metrics Dashboard -->
-        <div class="detail-hero">
-            <div class="smiley-section compact">
-                <canvas id="smiley-canvas"></canvas>
-                <div class="smiley-legend-compact">
-                    <span class="legend-5p">5' C→T</span>
-                    <span class="legend-3p">3' G→A</span>
-                    <span class="legend-obs">observed</span>
-                </div>
-            </div>
-
-            <!-- Key Metrics Dashboard - 4 metrics in a row -->
-            <div class="metrics-dashboard">
-                <div class="metric-item status-metric">
-                    <div class="metric-badge ${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</div>
-                </div>
-                <div class="metric-item">
-                    <span class="metric-value">${pct(data.damage)}%</span>
-                    <span class="metric-label">Damage</span>
-                </div>
-                <div class="metric-item">
-                    <span class="metric-value">${n(data.significance).toFixed(1)}</span>
-                    <span class="metric-label">Signif.</span>
-                </div>
-                <div class="metric-item">
-                    <span class="metric-value">${fmt(data.n_reads)}</span>
-                    <span class="metric-label">Reads</span>
-                </div>
+        <!-- Compact Smiley Plot -->
+        <div class="smiley-compact">
+            <canvas id="smiley-canvas" width="280" height="140"></canvas>
+            <div class="smiley-legend-inline">
+                <span class="legend-5p">5' C→T</span>
+                <span class="legend-3p">3' G→A</span>
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="detail-actions">
-            <button class="action-btn track-btn" onclick="window.trackCurrentTaxon()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                </svg>
-                <span>Track Across Samples</span>
+        <!-- Key Metrics Row -->
+        <div class="metrics-row">
+            <div class="metric-badge ${status}">${status}</div>
+            <div class="metric"><span class="val">${pct(data.damage)}%</span><span class="lbl">damage</span></div>
+            <div class="metric"><span class="val">${n(data.significance).toFixed(1)}</span><span class="lbl">signif</span></div>
+            <div class="metric"><span class="val">${fmt(data.n_reads)}</span><span class="lbl">reads</span></div>
+        </div>
+
+        <!-- Taxonomy Path -->
+        <div class="taxonomy-compact">
+            ${[data.phylum, data.class_, data.order_, data.family, data.genus].filter(Boolean).map(cleanName).join(' › ')}
+        </div>
+
+        <!-- Actions -->
+        <div class="detail-actions-compact">
+            <button class="action-btn-sm" onclick="window.trackCurrentTaxon()" title="Track across samples">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                Track
             </button>
-            <button class="action-btn expand-btn" onclick="window.openDetailModal()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-                    <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-                </svg>
-                <span>Full Details</span>
+            <button class="action-btn-sm" onclick="window.openDetailModal()" title="Full details">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><line x1="21" y1="3" x2="14" y2="10"/></svg>
+                Details
             </button>
         </div>
 
@@ -238,7 +221,7 @@ window.trackCurrentTaxon = async function() {
 
     if (taxonName) {
         // Dynamically import compare.js to get the tracking function
-        const { trackTaxonAcrossSamples } = await import('./compare.js?v=47');
+        const { trackTaxonAcrossSamples } = await import('./compare.js?v=48');
         trackTaxonAcrossSamples(taxonName, taxonLevel);
     }
 };
