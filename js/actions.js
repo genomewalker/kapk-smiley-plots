@@ -1,8 +1,9 @@
 // ========== USER ACTIONS ==========
-import { state } from './state.js?v=49';
-import { loadSampleData } from './data.js?v=49';
-import { renderTable } from './table.js?v=49';
-import { renderDetailPanel } from './detail-panel.js?v=49';
+import { state } from './state.js?v=50';
+import { loadSampleData } from './data.js?v=50';
+import { renderTable } from './table.js?v=50';
+import { renderDetailPanel } from './detail-panel.js?v=50';
+import { openDetailPanel, closeDetailPanel } from './ui.js?v=50';
 
 export function selectSample(sample) {
     state.currentSample = sample;
@@ -16,6 +17,9 @@ export function selectSample(sample) {
     });
 
     document.getElementById('status-sample').textContent = sample;
+
+    // Close detail panel when switching samples
+    closeDetailPanel();
 
     // Reset detail section
     document.getElementById('detail-species').textContent = 'Select a taxon';
@@ -39,6 +43,7 @@ export function selectReference(id) {
     });
 
     renderDetailPanel(data);
+    openDetailPanel();
     document.getElementById('status-selected').textContent = '1';
 }
 

@@ -1,7 +1,7 @@
 // ========== UI EVENT LISTENERS ==========
-import { state } from './state.js?v=49';
-import { applyFilters, exportData } from './data.js?v=49';
-import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=49';
+import { state } from './state.js?v=50';
+import { applyFilters, exportData } from './data.js?v=50';
+import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=50';
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -132,10 +132,57 @@ window.searchSelectTaxon = function(taxonName, level) {
         .replace(/&amp;/g, '&');
 
     // Open tracking modal for this taxon
-    import('./compare.js?v=49').then(({ trackTaxonAcrossSamples }) => {
+    import('./compare.js?v=50').then(({ trackTaxonAcrossSamples }) => {
         trackTaxonAcrossSamples(unescaped, level);
     });
 };
+
+// Open/close taxonomy overlay
+export function openTaxonomyOverlay() {
+    document.getElementById('taxonomy-overlay').classList.add('open');
+}
+
+export function closeTaxonomyOverlay() {
+    document.getElementById('taxonomy-overlay').classList.remove('open');
+}
+
+// Open/close detail panel
+export function openDetailPanel() {
+    document.getElementById('detail-panel').classList.add('open');
+}
+
+export function closeDetailPanel() {
+    document.getElementById('detail-panel').classList.remove('open');
+    state.selectedRef = null;
+    // Deselect table row
+    document.querySelectorAll('.data-table tbody tr.selected').forEach(tr => tr.classList.remove('selected'));
+}
+
+// Update filter bar display
+export function updateFilterBar() {
+    const filterBar = document.getElementById('table-filter-bar');
+    const chipsContainer = document.getElementById('filter-path-chips');
+
+    if (state.filterPath.length === 0) {
+        filterBar.classList.remove('visible');
+        return;
+    }
+
+    filterBar.classList.add('visible');
+
+    // Create chips for each level in the filter path
+    const levelNames = ['Domain', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species'];
+    chipsContainer.innerHTML = state.filterPath.map((taxon, i) => {
+        const cleanTaxon = taxon.replace(/^[dpcofgs]__/, '');
+        const level = levelNames[i] || '';
+        return `
+            <span class="filter-chip-item" data-index="${i}" onclick="window.navigateToFilterLevel(${i})">
+                <span class="chip-level">${level}</span>
+                ${cleanTaxon}
+            </span>
+        `;
+    }).join('');
+}
 
 export function setupEventListeners() {
     // Status filter
@@ -182,13 +229,32 @@ export function setupEventListeners() {
         });
     });
 
-    // Sunburst section toggle
-    document.getElementById('sunburst-toggle')?.addEventListener('click', () => {
-        state.showSunburst = !state.showSunburst;
-        document.querySelector('.sunburst-section')?.classList.toggle('collapsed', !state.showSunburst);
-    });
+    // Taxonomy overlay toggle
+    const taxonomyBtn = document.getElementById('taxonomy-btn');
+    const taxonomyOverlay = document.getElementById('taxonomy-overlay');
+    const taxonomyClose = document.getElementById('taxonomy-close');
 
-    // Detail section is now embedded - no close button needed
+    if (taxonomyBtn) {
+        taxonomyBtn.addEventListener('click', openTaxonomyOverlay);
+    }
+
+    if (taxonomyClose) {
+        taxonomyClose.addEventListener('click', closeTaxonomyOverlay);
+    }
+
+    if (taxonomyOverlay) {
+        taxonomyOverlay.addEventListener('click', (e) => {
+            if (e.target === taxonomyOverlay) {
+                closeTaxonomyOverlay();
+            }
+        });
+    }
+
+    // Detail panel close button
+    const detailCloseBtn = document.getElementById('detail-close-btn');
+    if (detailCloseBtn) {
+        detailCloseBtn.addEventListener('click', closeDetailPanel);
+    }
 
     // Command palette
     const overlay = document.getElementById('command-overlay');
@@ -215,6 +281,8 @@ export function setupEventListeners() {
         }
         if (e.key === 'Escape') {
             overlay.classList.remove('open');
+            closeTaxonomyOverlay();
+            closeDetailPanel();
         }
     });
 
@@ -243,7 +311,7 @@ export function setupEventListeners() {
 
     // Compare button
     document.getElementById('compare-btn').addEventListener('click', () => {
-        import('./compare.js?v=49').then(({ openComparePanel }) => {
+        import('./compare.js?v=50').then(({ openComparePanel }) => {
             openComparePanel();
         });
     });

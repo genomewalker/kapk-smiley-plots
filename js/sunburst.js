@@ -1,25 +1,19 @@
 // ========== SUNBURST VISUALIZATION ==========
-import { state, domainColors } from './state.js?v=49';
-import { fmt } from './utils.js?v=49';
-import { applyFilters } from './data.js?v=49';
-import { renderTable } from './table.js?v=49';
+import { state, domainColors } from './state.js?v=50';
+import { fmt } from './utils.js?v=50';
+import { applyFilters } from './data.js?v=50';
+import { renderTable } from './table.js?v=50';
+import { updateFilterBar, closeTaxonomyOverlay } from './ui.js?v=50';
 
 export function updateFilterIndicator() {
-    const filterBadge = document.getElementById('sunburst-filter-badge');
-    const filterPathText = document.getElementById('filter-path-text');
     const centerBackBtn = document.getElementById('center-back-btn');
     const bc = document.getElementById('sunburst-breadcrumb');
 
     if (state.filterPath.length === 0) {
-        filterBadge.classList.remove('visible');
         if (centerBackBtn) centerBackBtn.classList.remove('visible');
         // Reset breadcrumb to default
         bc.innerHTML = '<span style="color: var(--text-tertiary)">Hover to explore</span>';
     } else {
-        // Show only the current (deepest) filter level in badge
-        const currentFilter = state.filterPath[state.filterPath.length - 1].replace(/^[dpcofgs]__/, '');
-        filterPathText.textContent = currentFilter;
-        filterBadge.classList.add('visible');
         if (centerBackBtn) centerBackBtn.classList.add('visible');
 
         // Update breadcrumb to show filter path with clickable crumbs
@@ -36,6 +30,9 @@ export function updateFilterIndicator() {
             });
         });
     }
+
+    // Update the table filter bar
+    updateFilterBar();
 }
 
 export function navigateToFilterLevel(index) {
@@ -106,7 +103,7 @@ export function resetSunburstCenter() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h4>Taxonomy</h4>
-        <p>Hover to explore</p>
+        <p>Click to filter</p>
     `;
 }
 
@@ -195,10 +192,13 @@ export function renderSunburst(root) {
                     applyFilters();
                     renderTable();
                     updateCenterForCurrentFilter();
+                    // Close taxonomy overlay after filtering
+                    closeTaxonomyOverlay();
                 } else {
                     // Fallback to selecting that reference
-                    const { selectReference } = await import('./actions.js?v=49');
+                    const { selectReference } = await import('./actions.js?v=50');
                     selectReference(d.data.data.id);
+                    closeTaxonomyOverlay();
                 }
             } else if (d.data.name && d.data.name !== 'root') {
                 // Non-leaf - filter table by this taxonomy level
@@ -208,6 +208,8 @@ export function renderSunburst(root) {
                 applyFilters();
                 renderTable();
                 updateCenterForCurrentFilter();
+                // Close taxonomy overlay after filtering
+                closeTaxonomyOverlay();
             }
         });
 }
@@ -216,7 +218,7 @@ function updateSunburstCenter(d) {
     const center = document.getElementById('sunburst-center');
     const name = d.data.name ? d.data.name.replace(/^[dpcofgs]__/, '') : 'Taxonomy';
     const backBtnVisible = state.filterPath.length > 0 ? 'visible' : '';
-    const reads = d.value ? fmt(d.value) + ' reads' : 'Hover to explore';
+    const reads = d.value ? fmt(d.value) + ' reads' : 'Click to filter';
 
     center.innerHTML = `
         <button class="center-back-btn ${backBtnVisible}" id="center-back-btn" title="Go back" onclick="window.goBackOneLevel()">
@@ -261,6 +263,8 @@ function updateBreadcrumb(d) {
                 updateFilterIndicator();
                 applyFilters();
                 renderTable();
+                // Close taxonomy overlay after filtering
+                closeTaxonomyOverlay();
             });
         });
     }
