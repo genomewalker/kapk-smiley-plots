@@ -1,7 +1,7 @@
 // ========== UI EVENT LISTENERS ==========
-import { state } from './state.js?v=45';
-import { applyFilters, exportData } from './data.js?v=45';
-import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=45';
+import { state } from './state.js?v=47';
+import { applyFilters, exportData } from './data.js?v=47';
+import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=47';
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -132,7 +132,7 @@ window.searchSelectTaxon = function(taxonName, level) {
         .replace(/&amp;/g, '&');
 
     // Open tracking modal for this taxon
-    import('./compare.js?v=45').then(({ trackTaxonAcrossSamples }) => {
+    import('./compare.js?v=47').then(({ trackTaxonAcrossSamples }) => {
         trackTaxonAcrossSamples(unescaped, level);
     });
 };
@@ -182,20 +182,20 @@ export function setupEventListeners() {
         });
     });
 
-    // View toggle
+    // View toggle (hidden on mobile, but kept for desktop)
     document.querySelectorAll('.view-toggle button').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             state.showSunburst = btn.dataset.view === 'sunburst';
-            document.getElementById('sunburst-container').classList.toggle('collapsed', !state.showSunburst);
+            document.getElementById('sunburst-panel')?.classList.toggle('collapsed', !state.showSunburst);
         });
     });
 
-    // Sunburst toggle
-    document.getElementById('sunburst-toggle').addEventListener('click', () => {
+    // Sunburst panel toggle
+    document.getElementById('sunburst-toggle')?.addEventListener('click', () => {
         state.showSunburst = !state.showSunburst;
-        document.getElementById('sunburst-container').classList.toggle('collapsed', !state.showSunburst);
+        document.getElementById('sunburst-panel')?.classList.toggle('collapsed', !state.showSunburst);
     });
 
     // Detail close
@@ -268,7 +268,7 @@ export function setupEventListeners() {
 
     // Compare button
     document.getElementById('compare-btn').addEventListener('click', () => {
-        import('./compare.js?v=45').then(({ openComparePanel }) => {
+        import('./compare.js?v=47').then(({ openComparePanel }) => {
             openComparePanel();
         });
     });
