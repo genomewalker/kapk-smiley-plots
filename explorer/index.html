@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles.css?v=50">
+    <link rel="stylesheet" href="../styles.css?v=83">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
@@ -35,9 +35,20 @@
             </div>
 
             <div class="header-actions">
-                <button class="btn btn-ghost" id="compare-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                    <span>Compare</span>
+                <button class="btn btn-compare" id="compare-samples-btn" title="Compare selected samples (select samples in sidebar)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="6" cy="12" r="4"/>
+                        <circle cx="18" cy="12" r="4"/>
+                        <path d="M10 12h4" stroke-dasharray="2 2"/>
+                    </svg>
+                    <span>Compare Samples</span>
+                </button>
+                <button class="btn btn-taxa" id="compare-taxa-btn" title="Compare taxa across samples">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>Compare Taxa</span>
                 </button>
                 <button class="btn btn-secondary" id="export-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -102,29 +113,46 @@
                     <div style="flex:1"></div>
 
                     <div class="toolbar-group">
-                        <!-- Taxonomy button to open sunburst overlay -->
-                        <button class="btn btn-taxonomy" id="taxonomy-btn" title="Explore taxonomy">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-                            <span>Taxonomy</span>
-                        </button>
+                        <div class="filter-indicator" id="filter-indicator">
+                            <span class="filter-label">Filter:</span>
+                            <div class="filter-path-chips" id="filter-path-chips"></div>
+                            <button class="filter-clear-btn" id="filter-clear-btn" onclick="clearAllFilters()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Content area -->
+                <!-- Content area - resizable split -->
                 <div class="content-area">
-                    <!-- Table panel (main content) -->
-                    <div class="table-panel">
-                        <!-- Active filter indicator -->
-                        <div class="table-filter-bar" id="table-filter-bar">
-                            <div class="filter-indicator" id="filter-indicator">
-                                <span class="filter-label">Filtered by:</span>
-                                <div class="filter-path-chips" id="filter-path-chips"></div>
-                                <button class="filter-clear-btn" id="filter-clear-btn" onclick="clearAllFilters()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                    Clear
+                    <!-- Sunburst panel -->
+                    <div class="sunburst-panel" id="sunburst-panel">
+                        <div class="panel-header">
+                            <h3>Taxonomy</h3>
+                            <div class="sunburst-legend" id="sunburst-legend"></div>
+                        </div>
+                        <div class="sunburst-container" id="sunburst-container">
+                            <svg id="sunburst"></svg>
+                            <div class="sunburst-center" id="sunburst-center">
+                                <button class="center-back-btn" id="center-back-btn" title="Go back" onclick="goBackOneLevel()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                                 </button>
+                                <h4>All Taxa</h4>
+                                <p>Click to filter</p>
                             </div>
                         </div>
+                        <div class="sunburst-breadcrumb" id="sunburst-breadcrumb">
+                            <span>Hover to explore</span>
+                        </div>
+                    </div>
+
+                    <!-- Resizable divider -->
+                    <div class="resize-handle" id="resize-handle">
+                        <div class="resize-line"></div>
+                    </div>
+
+                    <!-- Table panel -->
+                    <div class="table-panel" id="table-panel">
                         <div class="table-container" id="table-container">
                             <table class="data-table" id="data-table">
                                 <thead>
@@ -136,6 +164,7 @@
                                         <th data-sort="damage" class="sorted">Damage <span class="sort-icon">↓</span></th>
                                         <th data-sort="significance">Signif. <span class="sort-icon">↕</span></th>
                                         <th data-sort="n_reads">Reads <span class="sort-icon">↕</span></th>
+                                        <th data-sort="n_alns">Alns <span class="sort-icon">↕</span></th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -187,32 +216,24 @@
         </footer>
     </div>
 
-    <!-- Taxonomy overlay (sunburst) -->
-    <div class="taxonomy-overlay" id="taxonomy-overlay">
-        <div class="taxonomy-modal">
-            <div class="taxonomy-header">
-                <h2>Taxonomy Explorer</h2>
-                <p class="taxonomy-subtitle">Click to filter the table by taxonomic level</p>
-                <button class="taxonomy-close" id="taxonomy-close">
+    <!-- Compare samples overlay -->
+    <div class="compare-overlay" id="compare-overlay">
+        <div class="compare-modal">
+            <div class="compare-header">
+                <div>
+                    <h2>Compare Samples</h2>
+                    <p class="compare-subtitle" id="compare-subtitle">Comparing taxonomy distributions</p>
+                </div>
+                <button class="compare-close" id="compare-close">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
-            <div class="taxonomy-body">
-                <div class="sunburst-wrapper">
-                    <svg id="sunburst"></svg>
-                    <div class="sunburst-center" id="sunburst-center">
-                        <button class="center-back-btn" id="center-back-btn" title="Go back" onclick="goBackOneLevel()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                        </button>
-                        <h4>All Taxa</h4>
-                        <p>Click to filter</p>
-                    </div>
+            <div class="compare-body">
+                <div class="compare-sunburst-grid" id="compare-sunburst-grid">
+                    <!-- Sunbursts will be rendered here -->
                 </div>
-                <div class="taxonomy-info">
-                    <div class="sunburst-breadcrumb" id="sunburst-breadcrumb">
-                        <span>Hover to explore</span>
-                    </div>
-                    <div class="sunburst-legend" id="sunburst-legend"></div>
+                <div class="compare-filter-info" id="compare-filter-info">
+                    <span>Click on any segment to filter all views</span>
                 </div>
             </div>
         </div>
@@ -237,6 +258,6 @@
         </div>
     </div>
 
-    <script type="module" src="../js/app.js?v=50"></script>
+    <script type="module" src="../js/app.js?v=83"></script>
 </body>
 </html>

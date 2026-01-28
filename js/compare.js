@@ -1,7 +1,7 @@
 // ========== CROSS-SAMPLE COMPARISON SYSTEM ==========
 // A flagship feature for tracking taxa across multiple samples
-import { state } from './state.js?v=50';
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=50';
+import { state } from './state.js?v=83';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=83';
 
 // Global comparison basket (persists across sample switches)
 if (!window.comparisonBasket) {
@@ -14,7 +14,7 @@ let currentTrackingResults = [];
 // ==========================================
 // TRACK TAXON ACROSS SAMPLES - The Hero Feature
 // ==========================================
-export async function trackTaxonAcrossSamples(taxonName, taxonLevel = 'species') {
+export async function trackTaxonAcrossSamples(taxonName, taxonLevel = 'species', filterSamples = null) {
     if (!state.conn) return;
 
     // Show loading state with dramatic animation
@@ -35,6 +35,13 @@ export async function trackTaxonAcrossSamples(taxonName, taxonLevel = 'species')
         // Escape single quotes in taxon name for SQL
         const escapedName = taxonName.replace(/'/g, "''");
 
+        // Build sample filter clause if filterSamples provided
+        let sampleFilter = '';
+        if (filterSamples && filterSamples.length > 0) {
+            const escapedSamples = filterSamples.map(s => `'${s.replace(/'/g, "''")}'`).join(',');
+            sampleFilter = `AND m.sample IN (${escapedSamples})`;
+        }
+
         const result = await state.conn.query(`
             SELECT m.*,
                 f.fp1, f.fp2, f.fp3, f.fp4, f.fp5, f.fp6, f.fp7, f.fp8, f.fp9, f.fp10,
@@ -51,16 +58,17 @@ export async function trackTaxonAcrossSamples(taxonName, taxonLevel = 'species')
                 f.dm21, f.dm22, f.dm23, f.dm24, f.dm25
             FROM meta m
             JOIN freq f ON m.id = f.id
-            WHERE m.${levelColumn} = '${escapedName}'
+            WHERE (m.${levelColumn} = '${escapedName}'
                OR m.${levelColumn} = '${prefix}${escapedName}'
-               OR m.${levelColumn} LIKE '%__${escapedName}'
+               OR m.${levelColumn} LIKE '%__${escapedName}')
+            ${sampleFilter}
             ORDER BY m.damage DESC
         `);
 
-        const { convertResults } = await import('./utils.js?v=50');
+        const { convertResults } = await import('./utils.js?v=83');
         const matches = convertResults(result);
 
-        renderTrackingResults(taxonName, taxonLevel, matches);
+        renderTrackingResults(taxonName, taxonLevel, matches, filterSamples);
     } catch (err) {
         console.error('Track taxon error:', err);
         closeTrackingModal();
@@ -93,34 +101,59 @@ function showTrackingModal(taxonName) {
     document.body.style.overflow = 'hidden';
 }
 
-function renderTrackingResults(taxonName, taxonLevel, matches) {
+// Track current filter state for the tracking modal
+let trackingFilterStatus = 'all'; // 'all', 'damaged', 'non-damaged'
+let trackingFocusedIdx = null; // Currently focused/expanded card index
+
+// Navigation history for back button
+let modalHistory = []; // Stack of previous modal states
+
+function renderTrackingResults(taxonName, taxonLevel, matches, filterSamples = null) {
     const modal = document.getElementById('tracking-modal');
     if (!modal) return;
 
-    // Store tracking results for add button access
+    // Store original index on each match for linking cards to table rows
+    matches.forEach((m, idx) => m._origIdx = idx);
+
+    // Store tracking results globally
     currentTrackingResults = matches;
 
-    // Group by sample
-    const bySample = {};
-    matches.forEach(m => {
-        if (!bySample[m.sample]) bySample[m.sample] = [];
-        bySample[m.sample].push(m);
-    });
+    // Reset filter state
+    trackingFilterStatus = 'all';
+    trackingFocusedIdx = null;
 
-    const sampleCount = Object.keys(bySample).length;
+    // Calculate stats
+    const damagedCount = matches.filter(m => getStatus(m) === 'damaged').length;
+    const nonDamagedCount = matches.length - damagedCount;
     const avgDamage = matches.length > 0
         ? matches.reduce((sum, m) => sum + n(m.damage), 0) / matches.length
         : 0;
     const totalReads = matches.reduce((sum, m) => sum + n(m.n_reads), 0);
-    const avgReads = matches.length > 0 ? totalReads / matches.length : 0;
+    const totalAlns = matches.reduce((sum, m) => sum + n(m.n_alns), 0);
+
+    // Subtitle text depends on whether we're filtering
+    const subtitleText = filterSamples && filterSamples.length > 0
+        ? `Across ${filterSamples.length} selected sample${filterSamples.length > 1 ? 's' : ''}`
+        : 'Across all samples';
+
+    // Check if we have navigation history (came from another modal)
+    const hasHistory = modalHistory.length > 0;
 
     modal.innerHTML = `
         <div class="tracking-modal">
             <div class="tracking-header">
+                ${hasHistory ? `
+                <button class="tracking-back" onclick="goBackModal()" title="Go back">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                    Back
+                </button>
+                ` : ''}
                 <div class="tracking-hero">
                     <div class="hero-badge">${taxonLevel.toUpperCase()}</div>
                     <h1>${cleanName(taxonName)}</h1>
-                    <p class="hero-taxonomy">Tracked across all samples in dataset</p>
+                    <p class="hero-taxonomy">${subtitleText}</p>
                 </div>
                 <button class="tracking-close" onclick="closeTrackingModal()">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -129,30 +162,39 @@ function renderTrackingResults(taxonName, taxonLevel, matches) {
                 </button>
             </div>
 
-            <!-- Summary Stats Bar -->
-            <div class="tracking-summary">
-                <div class="summary-stat hero">
-                    <span class="stat-number">${sampleCount}</span>
-                    <span class="stat-label">Samples</span>
+            <!-- Summary Stats + Filters -->
+            <div class="tracking-toolbar">
+                <div class="tracking-stats">
+                    <div class="stat-chip">
+                        <span class="stat-value">${matches.length}</span>
+                        <span class="stat-label">hits</span>
+                    </div>
+                    <div class="stat-chip accent">
+                        <span class="stat-value">${pct(avgDamage)}%</span>
+                        <span class="stat-label">avg damage</span>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="stat-value">${fmt(totalReads)}</span>
+                        <span class="stat-label">total reads</span>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="stat-value">${fmt(totalAlns)}</span>
+                        <span class="stat-label">total alns</span>
+                    </div>
                 </div>
-                <div class="summary-stat">
-                    <span class="stat-number">${matches.length}</span>
-                    <span class="stat-label">Total Hits</span>
-                </div>
-                <div class="summary-stat">
-                    <span class="stat-number">${pct(avgDamage)}%</span>
-                    <span class="stat-label">Avg Damage</span>
-                </div>
-                <div class="summary-stat">
-                    <span class="stat-number">${fmt(Math.round(avgReads))}</span>
-                    <span class="stat-label">Avg Reads</span>
+                <div class="tracking-filters">
+                    <div class="filter-toggle" id="tracking-status-filter">
+                        <button class="active" data-filter="all">All <span class="count">${matches.length}</span></button>
+                        <button data-filter="damaged">Damaged <span class="count">${damagedCount}</span></button>
+                        <button data-filter="non-damaged">Non-damaged <span class="count">${nonDamagedCount}</span></button>
+                    </div>
                 </div>
             </div>
 
             <!-- Scrollable Content -->
             <div class="tracking-content">
                 <!-- Sample Gallery -->
-                <div class="tracking-gallery">
+                <div class="tracking-gallery" id="tracking-gallery">
                     ${matches.length === 0 ? `
                         <div class="no-matches">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -167,78 +209,24 @@ function renderTrackingResults(taxonName, taxonLevel, matches) {
                     ` : matches.map((data, idx) => renderTrackingCard(data, idx)).join('')}
                 </div>
 
-                ${matches.length > 1 ? `
-                <!-- Comparison Table -->
-                <div class="tracking-table-section">
-                    <h3>Cross-Sample Comparison</h3>
-                    <div class="tracking-table-wrapper">
-                        <table class="tracking-table" id="tracking-comparison-table">
-                            <thead>
-                                <tr>
-                                    <th data-sort="sample" class="sortable">Sample <span class="sort-icon">↕</span></th>
-                                    <th data-sort="status" class="sortable">Status <span class="sort-icon">↕</span></th>
-                                    <th data-sort="damage" class="sortable sorted">Damage <span class="sort-icon">↓</span></th>
-                                    <th data-sort="significance" class="sortable">Signif. <span class="sort-icon">↕</span></th>
-                                    <th data-sort="map_A" class="model-col sortable">A <span class="sort-icon">↕</span></th>
-                                    <th data-sort="map_q" class="model-col sortable">q <span class="sort-icon">↕</span></th>
-                                    <th data-sort="map_phi" class="model-col sortable">φ <span class="sort-icon">↕</span></th>
-                                    <th data-sort="map_c" class="model-col sortable">c <span class="sort-icon">↕</span></th>
-                                    <th data-sort="n_reads" class="sortable">Reads <span class="sort-icon">↕</span></th>
-                                    <th data-sort="coverage_mean" class="sortable">Cov. <span class="sort-icon">↕</span></th>
-                                    <th data-sort="breadth" class="sortable">Breadth <span class="sort-icon">↕</span></th>
-                                    <th data-sort="breadth_exp_ratio" class="sortable">B/E <span class="sort-icon">↕</span></th>
-                                    <th data-sort="norm_entropy" class="sortable">Entropy <span class="sort-icon">↕</span></th>
-                                    <th data-sort="norm_gini" class="sortable">Gini <span class="sort-icon">↕</span></th>
-                                    <th data-sort="read_ani_mean" class="sortable">ANI <span class="sort-icon">↕</span></th>
-                                    <th data-sort="gc_content" class="sortable">GC <span class="sort-icon">↕</span></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${matches.map(d => {
-                                    const status = getStatus(d);
-                                    return `
-                                        <tr class="status-row-${status}">
-                                            <td class="sample-cell">${d.sample}</td>
-                                            <td><span class="status-pill ${status}">${status}</span></td>
-                                            <td class="mono damage-val">${pct(d.damage)}%</td>
-                                            <td class="mono">${n(d.significance).toFixed(1)}</td>
-                                            <td class="mono model-col">${n(d.map_A).toFixed(4)}</td>
-                                            <td class="mono model-col">${n(d.map_q).toFixed(4)}</td>
-                                            <td class="mono model-col">${n(d.map_phi).toFixed(2)}</td>
-                                            <td class="mono model-col">${n(d.map_c).toFixed(4)}</td>
-                                            <td class="mono">${fmt(d.n_reads)}</td>
-                                            <td class="mono">${n(d.coverage_mean).toFixed(1)}x</td>
-                                            <td class="mono">${pct(d.breadth)}%</td>
-                                            <td class="mono">${n(d.breadth_exp_ratio).toFixed(2)}</td>
-                                            <td class="mono">${n(d.norm_entropy).toFixed(3)}</td>
-                                            <td class="mono">${n(d.norm_gini).toFixed(3)}</td>
-                                            <td class="mono">${n(d.read_ani_mean).toFixed(1)}%</td>
-                                            <td class="mono">${n(d.gc_content).toFixed(1)}%</td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                ` : ''}
             </div>
 
-            <div class="tracking-footer sticky">
+            <div class="tracking-footer">
                 <div class="footer-left">
-                    <span class="selection-info" id="tracking-selection-info">Click cards to select</span>
+                    <span class="tracking-tip">${matches.length} sample${matches.length !== 1 ? 's' : ''} compared</span>
                 </div>
                 <div class="footer-actions">
                     ${matches.length > 0 ? `
-                        <button class="btn btn-ghost" onclick="addAllToBasket()">Select All</button>
+                        <button class="btn btn-ghost" onclick="exportTrackingData()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Export CSV
+                        </button>
                     ` : ''}
-                    <button class="btn btn-primary" id="view-comparison-btn" onclick="goToComparison()" disabled>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-                        </svg>
-                        View Comparison
-                    </button>
+                    <button class="btn btn-primary" onclick="closeTrackingModal()">Done</button>
                 </div>
             </div>
         </div>
@@ -252,91 +240,43 @@ function renderTrackingResults(taxonName, taxonLevel, matches) {
     }, 100);
 
     setupTrackingModalEvents();
-    setupTrackingTableSorting(matches, taxonName, taxonLevel);
-
-    // Update selection counter to reflect any existing basket items
-    updateTrackingSelectionCounter();
+    setupTrackingFilters();
 }
 
-// Tracking table sorting state
-let trackingSortColumn = 'damage';
-let trackingSortDirection = 'desc';
 
-function setupTrackingTableSorting(matches, taxonName, taxonLevel) {
-    const table = document.getElementById('tracking-comparison-table');
-    if (!table) return;
+function setupTrackingFilters() {
+    const filterToggle = document.getElementById('tracking-status-filter');
+    if (!filterToggle) return;
 
-    table.querySelectorAll('th[data-sort]').forEach(th => {
-        th.style.cursor = 'pointer';
-        th.addEventListener('click', () => {
-            const col = th.dataset.sort;
-            if (trackingSortColumn === col) {
-                trackingSortDirection = trackingSortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                trackingSortColumn = col;
-                trackingSortDirection = 'desc';
-            }
+    filterToggle.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active state
+            filterToggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
 
-            // Update header styles
-            table.querySelectorAll('th').forEach(h => {
-                h.classList.remove('sorted');
-                const icon = h.querySelector('.sort-icon');
-                if (icon) icon.textContent = '↕';
-            });
-            th.classList.add('sorted');
-            th.querySelector('.sort-icon').textContent = trackingSortDirection === 'asc' ? '↑' : '↓';
-
-            // Sort and re-render tbody
-            const sorted = [...matches].sort((a, b) => {
-                let aVal = a[col];
-                let bVal = b[col];
-
-                // Handle status sorting
-                if (col === 'status') {
-                    aVal = getStatus(a);
-                    bVal = getStatus(b);
-                }
-
-                if (typeof aVal === 'string' || typeof bVal === 'string') {
-                    aVal = String(aVal || '');
-                    bVal = String(bVal || '');
-                    return trackingSortDirection === 'asc'
-                        ? aVal.localeCompare(bVal)
-                        : bVal.localeCompare(aVal);
-                }
-                aVal = Number(aVal) || 0;
-                bVal = Number(bVal) || 0;
-                return trackingSortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-            });
-
-            // Re-render tbody
-            const tbody = table.querySelector('tbody');
-            tbody.innerHTML = sorted.map(d => {
-                const status = getStatus(d);
-                return `
-                    <tr class="status-row-${status}">
-                        <td class="sample-cell">${d.sample}</td>
-                        <td><span class="status-pill ${status}">${status}</span></td>
-                        <td class="mono damage-val">${pct(d.damage)}%</td>
-                        <td class="mono">${n(d.significance).toFixed(1)}</td>
-                        <td class="mono model-col">${n(d.map_A).toFixed(4)}</td>
-                        <td class="mono model-col">${n(d.map_q).toFixed(4)}</td>
-                        <td class="mono model-col">${n(d.map_phi).toFixed(2)}</td>
-                        <td class="mono model-col">${n(d.map_c).toFixed(4)}</td>
-                        <td class="mono">${fmt(d.n_reads)}</td>
-                        <td class="mono">${n(d.coverage_mean).toFixed(1)}x</td>
-                        <td class="mono">${pct(d.breadth)}%</td>
-                        <td class="mono">${n(d.breadth_exp_ratio).toFixed(2)}</td>
-                        <td class="mono">${n(d.norm_entropy).toFixed(3)}</td>
-                        <td class="mono">${n(d.norm_gini).toFixed(3)}</td>
-                        <td class="mono">${n(d.read_ani_mean).toFixed(1)}%</td>
-                        <td class="mono">${n(d.gc_content).toFixed(1)}%</td>
-                    </tr>
-                `;
-            }).join('');
+            trackingFilterStatus = btn.dataset.filter;
+            applyTrackingFilter();
         });
     });
 }
+
+function applyTrackingFilter() {
+    const gallery = document.getElementById('tracking-gallery');
+
+    // Filter cards
+    gallery.querySelectorAll('.tracking-card').forEach(card => {
+        const idx = parseInt(card.dataset.idx);
+        const data = currentTrackingResults[idx];
+        const status = getStatus(data);
+
+        if (trackingFilterStatus === 'all' || status === trackingFilterStatus) {
+            card.classList.remove('filtered-out');
+        } else {
+            card.classList.add('filtered-out');
+        }
+    });
+}
+
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -345,26 +285,79 @@ function escapeHtml(str) {
 
 function renderTrackingCard(data, idx) {
     const status = getStatus(data);
-    const isInBasket = window.comparisonBasket.some(item => item.id === data.id && item.sample === data.sample);
     const escapedSample = escapeHtml(data.sample);
     return `
-        <div class="tracking-card ${isInBasket ? 'selected' : ''}"
+        <div class="tracking-card"
              style="animation-delay: ${idx * 0.03}s"
              data-id="${data.id}"
+             data-idx="${idx}"
              data-sample="${escapedSample}"
-             onclick="toggleTrackingSelection(${data.id}, '${escapedSample}')">
-            <div class="card-sample-badge">${escapedSample}</div>
+             data-status="${status}"
+>
+            <div class="card-header">
+                <span class="card-idx">${idx + 1}</span>
+                <span class="card-sample">${escapedSample}</span>
+                <span class="status-indicator ${status}" title="${status}"></span>
+            </div>
             <div class="card-plot">
                 <canvas id="tracking-canvas-${idx}"></canvas>
             </div>
-            <div class="card-metrics">
-                <div class="card-status">
-                    <span class="status-dot ${status}"></span>
-                    <span class="status-text">${status}</span>
+            <div class="card-footer">
+                <span class="damage-label">Damage</span>
+                <span class="damage-value">${pct(data.damage)}%</span>
+            </div>
+            <!-- Expanded detail panel (shown when focused) -->
+            <div class="card-expanded-detail">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Reads</span>
+                        <span class="detail-value">${fmt(data.n_reads)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Alns</span>
+                        <span class="detail-value">${fmt(data.n_alns)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Signif.</span>
+                        <span class="detail-value">${n(data.significance).toFixed(1)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Coverage</span>
+                        <span class="detail-value">${n(data.coverage_mean).toFixed(1)}x</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Breadth</span>
+                        <span class="detail-value">${pct(data.breadth)}%</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">B/E Ratio</span>
+                        <span class="detail-value">${n(data.breadth_exp_ratio).toFixed(2)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">ANI</span>
+                        <span class="detail-value">${n(data.read_ani_mean).toFixed(1)}%</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Entropy</span>
+                        <span class="detail-value">${n(data.norm_entropy).toFixed(3)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Gini</span>
+                        <span class="detail-value">${n(data.norm_gini).toFixed(3)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">GC %</span>
+                        <span class="detail-value">${n(data.gc_content).toFixed(1)}%</span>
+                    </div>
                 </div>
-                <div class="card-stats">
-                    <span class="damage-value">${pct(data.damage)}%</span>
-                    <span class="reads-value">${fmt(data.n_reads)}</span>
+                <div class="model-params">
+                    <span class="model-title">Model Parameters</span>
+                    <div class="model-grid">
+                        <span>A=${n(data.map_A).toFixed(3)}</span>
+                        <span>q=${n(data.map_q).toFixed(3)}</span>
+                        <span>φ=${n(data.map_phi).toFixed(1)}</span>
+                        <span>c=${n(data.map_c).toFixed(3)}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -521,73 +514,122 @@ function setupTrackingModalEvents() {
     });
 }
 
-window.closeTrackingModal = function() {
+window.closeTrackingModal = function(preserveHistory = false) {
     const modal = document.getElementById('tracking-modal');
     if (modal) {
         modal.classList.remove('open');
         document.body.style.overflow = '';
     }
+    // Clear history unless we're navigating back
+    if (!preserveHistory) {
+        modalHistory = [];
+    }
 };
 
-// Toggle selection in tracking modal
-window.toggleTrackingSelection = function(id, sample) {
-    const exists = window.comparisonBasket.find(item => item.id === id && item.sample === sample);
-    const card = document.querySelector(`.tracking-card[data-id="${id}"][data-sample="${sample}"]`);
+// Highlight functions for linking cards and table rows
+window.highlightTrackingCard = function(idx) {
+    const card = document.querySelector(`.tracking-card[data-idx="${idx}"]`);
+    if (card) card.classList.add('highlight');
+};
 
-    if (exists) {
-        // Remove from basket
-        const idx = window.comparisonBasket.findIndex(item => item.id === id && item.sample === sample);
-        if (idx !== -1) {
-            window.comparisonBasket.splice(idx, 1);
-        }
-        if (card) {
-            card.classList.remove('selected');
-            const hint = card.querySelector('.hint-text');
-            if (hint) hint.textContent = 'Click to select';
-        }
+window.unhighlightTrackingCard = function(idx) {
+    const card = document.querySelector(`.tracking-card[data-idx="${idx}"]`);
+    if (card) card.classList.remove('highlight');
+};
+
+// Focus/expand a card to show details
+window.focusTrackingCard = function(idx) {
+    const allCards = document.querySelectorAll('.tracking-card');
+    const targetCard = document.querySelector(`.tracking-card[data-idx="${idx}"]`);
+
+    if (!targetCard) return;
+
+    // Toggle focus - if already focused, unfocus
+    if (targetCard.classList.contains('focused')) {
+        targetCard.classList.remove('focused');
+        trackingFocusedIdx = null;
+        // Remove dim from other cards
+        allCards.forEach(c => c.classList.remove('dimmed'));
     } else {
-        // Add to basket
-        const data = currentTrackingResults.find(d => d.id === id && d.sample === sample);
-        if (data) {
-            window.comparisonBasket.push({ ...data });
-            if (card) {
-                card.classList.add('selected');
-                const hint = card.querySelector('.hint-text');
-                if (hint) hint.textContent = 'Selected';
+        // Remove focus from any other card
+        allCards.forEach(c => c.classList.remove('focused', 'dimmed'));
+
+        // Focus this card and dim others
+        targetCard.classList.add('focused');
+        allCards.forEach(c => {
+            if (c !== targetCard && !c.classList.contains('filtered-out')) {
+                c.classList.add('dimmed');
             }
-        }
-    }
+        });
 
-    updateBasketIndicator();
-    updateTrackingSelectionCounter();
+        trackingFocusedIdx = idx;
+
+        // Scroll card into view
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 };
 
-function updateTrackingSelectionCounter() {
-    const count = window.comparisonBasket.length;
-
-    // Update info text
-    const info = document.getElementById('tracking-selection-info');
-    if (info) {
-        if (count === 0) {
-            info.textContent = 'Click cards to select';
-            info.classList.remove('has-selection');
-        } else {
-            info.innerHTML = `<strong>${count}</strong> selected`;
-            info.classList.add('has-selection');
-        }
+// Export tracking data to CSV
+window.exportTrackingData = function() {
+    if (!currentTrackingResults || currentTrackingResults.length === 0) {
+        return;
     }
 
-    // Update button state
-    const btn = document.getElementById('view-comparison-btn');
-    if (btn) {
-        btn.disabled = count === 0;
-    }
-}
+    // Apply current filter
+    const dataToExport = trackingFilterStatus === 'all'
+        ? currentTrackingResults
+        : currentTrackingResults.filter(d => getStatus(d) === trackingFilterStatus);
 
-window.goToComparison = function() {
-    closeTrackingModal();
-    setTimeout(() => openComparePanel(), 150);
+    const headers = [
+        'sample', 'reference', 'domain', 'phylum', 'class', 'order', 'family', 'genus', 'species',
+        'damage', 'significance', 'n_reads', 'status',
+        'model_A', 'model_q', 'model_phi', 'model_c',
+        'coverage_mean', 'breadth', 'breadth_exp_ratio', 'norm_entropy', 'norm_gini', 'read_ani_mean', 'gc_content'
+    ];
+
+    const rows = dataToExport.map(d => [
+        d.sample,
+        d.reference,
+        d.domain,
+        d.phylum,
+        d.class_,
+        d.order_,
+        d.family,
+        d.genus,
+        d.species,
+        d.damage,
+        d.significance,
+        d.n_reads,
+        getStatus(d),
+        d.map_A,
+        d.map_q,
+        d.map_phi,
+        d.map_c,
+        d.coverage_mean,
+        d.breadth,
+        d.breadth_exp_ratio,
+        d.norm_entropy,
+        d.norm_gini,
+        d.read_ani_mean,
+        d.gc_content
+    ]);
+
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v || ''}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    // Use taxon name in filename
+    const taxonName = currentTrackingResults[0]?.species || currentTrackingResults[0]?.genus || 'taxon';
+    const cleanTaxonName = cleanName(taxonName).replace(/[^a-zA-Z0-9]/g, '_');
+    a.download = `${cleanTaxonName}_tracking_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showToast(`Exported ${dataToExport.length} records`);
 };
+
 
 // ==========================================
 // COMPARISON BASKET - Multi-sample collection
@@ -645,7 +687,7 @@ window.addAllToBasket = function() {
 };
 
 function updateBasketIndicator() {
-    const compareBtn = document.getElementById('compare-btn');
+    const compareBtn = document.getElementById('compare-taxa-btn');
     if (compareBtn) {
         let badge = compareBtn.querySelector('.basket-badge');
         if (window.comparisonBasket.length > 0) {
@@ -721,6 +763,7 @@ export function openComparePanel() {
     const avgDamage = compareData.reduce((s, d) => s + n(d.damage), 0) / compareData.length;
     const avgSignif = compareData.reduce((s, d) => s + n(d.significance), 0) / compareData.length;
     const totalReads = compareData.reduce((s, d) => s + n(d.n_reads), 0);
+    const totalAlns = compareData.reduce((s, d) => s + n(d.n_alns), 0);
 
     modal.innerHTML = `
         <div class="compare-modal flagship">
@@ -787,6 +830,10 @@ export function openComparePanel() {
                     <span class="stat-num">${fmt(totalReads)}</span>
                     <span class="stat-label">Total Reads</span>
                 </div>
+                <div class="ribbon-stat">
+                    <span class="stat-num">${fmt(totalAlns)}</span>
+                    <span class="stat-label">Total Alns</span>
+                </div>
             </div>
 
             <!-- Main content: Smiley plot grid -->
@@ -828,6 +875,7 @@ export function openComparePanel() {
                                 <th class="model-col">φ</th>
                                 <th class="model-col">c</th>
                                 <th class="col-group-start">Reads</th>
+                                <th>Alns</th>
                                 <th>Cov.</th>
                                 <th>Breadth</th>
                                 <th>B/E</th>
@@ -857,6 +905,7 @@ export function openComparePanel() {
                                         <td class="mono model-col">${n(d.map_phi).toFixed(2)}</td>
                                         <td class="mono model-col">${n(d.map_c).toFixed(4)}</td>
                                         <td class="mono col-group-start">${fmt(d.n_reads)}</td>
+                                        <td class="mono">${fmt(d.n_alns)}</td>
                                         <td class="mono">${n(d.coverage_mean).toFixed(1)}x</td>
                                         <td class="mono">${pct(d.breadth)}%</td>
                                         <td class="mono">${n(d.breadth_exp_ratio).toFixed(2)}</td>
@@ -931,7 +980,7 @@ function renderCompareCard(data, idx) {
             </div>
             <div class="card-footer">
                 <span class="card-damage">${pct(data.damage)}%</span>
-                <span class="card-reads">${fmt(data.n_reads)}</span>
+                <span class="card-reads">${fmt(data.n_reads)} / ${fmt(data.n_alns)}</span>
             </div>
         </div>
     `;
@@ -1135,7 +1184,7 @@ function renderCompareItemV2(data, sampleIdx, itemIdx) {
                 <span class="status-indicator ${status}"></span>
                 <span class="damage-stat">${pct(data.damage)}%</span>
                 <span class="signif-stat">${n(data.significance).toFixed(1)}</span>
-                <span class="reads-stat">${fmt(data.n_reads)}</span>
+                <span class="reads-stat">${fmt(data.n_reads)} / ${fmt(data.n_alns)}</span>
             </div>
             <button class="track-btn" onclick="window.trackFromCompare('${escapeHtml(data.species || data.genus)}', '${data.species ? 'species' : 'genus'}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1163,6 +1212,10 @@ function renderCompareSummary(compareData) {
                 <div class="summary-item">
                     <span class="summary-label">Total Reads</span>
                     <span class="summary-value">${fmt(compareData.reduce((s, d) => s + n(d.n_reads), 0))}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total Alns</span>
+                    <span class="summary-value">${fmt(compareData.reduce((s, d) => s + n(d.n_alns), 0))}</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Damaged Taxa</span>
@@ -1252,11 +1305,15 @@ function setupCompareModalEvents() {
     });
 }
 
-window.closeCompareModal = function() {
+window.closeCompareModal = function(preserveHistory = false) {
     const modal = document.getElementById('compare-modal');
     if (modal) {
         modal.classList.remove('open');
         document.body.style.overflow = '';
+    }
+    // Clear history unless we're navigating back
+    if (!preserveHistory) {
+        modalHistory = [];
     }
 };
 
@@ -1264,7 +1321,7 @@ window.clearBasket = function() {
     window.comparisonBasket = [];
     state.compareList = [];
     updateBasketIndicator();
-    import('./table.js?v=50').then(({ renderTable }) => renderTable());
+    import('./table.js?v=83').then(({ renderTable }) => renderTable());
     closeCompareModal();
 };
 
@@ -1290,8 +1347,24 @@ window.trackFromCompare = function(taxonName, level) {
         .replace(/&gt;/g, '>')
         .replace(/&amp;/g, '&');
 
-    closeCompareModal();
+    // Push current state to history before navigating
+    modalHistory.push({ type: 'compare' });
+    closeCompareModal(true); // Preserve history so back button works
     trackTaxonAcrossSamples(unescaped, level);
+};
+
+// Go back to previous modal
+window.goBackModal = function() {
+    if (modalHistory.length === 0) return;
+
+    const prev = modalHistory.pop();
+    if (prev.type === 'compare') {
+        closeTrackingModal(true); // preserve remaining history
+        openComparePanel();
+    } else if (prev.type === 'tracking') {
+        closeCompareModal(true); // preserve remaining history
+        trackTaxonAcrossSamples(prev.taxonName, prev.taxonLevel, prev.filterSamples);
+    }
 };
 
 window.exportComparison = function() {

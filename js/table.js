@@ -1,33 +1,79 @@
 // ========== TABLE RENDERING ==========
-import { state, domainColors } from './state.js?v=50';
-import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=50';
-import { renderSunburst, updateLegend } from './sunburst.js?v=50';
+import { state, domainColors } from './state.js?v=83';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=83';
+import { renderSunburst, updateLegend } from './sunburst.js?v=83';
 
 export function renderSampleList(samples) {
     const container = document.getElementById('sample-list');
     container.innerHTML = samples.map(s => {
         const filteredCount = n(s.filtered_taxa_count) || n(s.taxa_count);
         const damagedPct = filteredCount > 0 ? (n(s.damaged_count) / filteredCount * 100).toFixed(0) : 0;
+        const isSelected = state.selectedSamples.includes(s.sample);
         return `
-            <div class="sample-item" data-sample="${s.sample}">
-                <div class="sample-item-header">
-                    <span class="sample-name">${s.sample}</span>
-                    <div class="sample-damage-indicator" style="background: ${damagedPct > 0 ? 'var(--status-damaged)' : 'var(--status-non-damaged)'}"></div>
+            <div class="sample-item ${isSelected ? 'compare-selected' : ''}" data-sample="${s.sample}">
+                <div class="sample-select-checkbox ${isSelected ? 'checked' : ''}" data-sample="${s.sample}" title="Select for comparison">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
                 </div>
-                <div class="sample-stats">
-                    <span>Taxa: <span class="value">${fmt(filteredCount)}</span></span>
-                    <span>Damaged: <span class="value">${damagedPct}%</span></span>
+                <div class="sample-item-content">
+                    <div class="sample-item-header">
+                        <span class="sample-name">${s.sample}</span>
+                        <div class="sample-damage-indicator" style="background: ${damagedPct > 0 ? 'var(--status-damaged)' : 'var(--status-non-damaged)'}"></div>
+                    </div>
+                    <div class="sample-stats">
+                        <span>Taxa: <span class="value">${fmt(filteredCount)}</span></span>
+                        <span>Damaged: <span class="value">${damagedPct}%</span></span>
+                    </div>
                 </div>
             </div>
         `;
     }).join('');
 
-    container.querySelectorAll('.sample-item').forEach(item => {
-        item.addEventListener('click', async () => {
-            const { selectSample } = await import('./actions.js?v=50');
-            selectSample(item.dataset.sample);
+    // Checkbox click handler
+    container.querySelectorAll('.sample-select-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const sampleName = checkbox.dataset.sample;
+            const idx = state.selectedSamples.indexOf(sampleName);
+            if (idx === -1) {
+                state.selectedSamples.push(sampleName);
+            } else {
+                state.selectedSamples.splice(idx, 1);
+            }
+            renderSampleList(state.samples);
+            updateCompareSamplesButton();
         });
     });
+
+    // Sample item click handler (select as current sample)
+    container.querySelectorAll('.sample-item-content').forEach(content => {
+        content.addEventListener('click', async () => {
+            const { selectSample } = await import('./actions.js?v=83');
+            const sample = content.closest('.sample-item').dataset.sample;
+            selectSample(sample);
+        });
+    });
+}
+
+// Update compare samples button badge
+function updateCompareSamplesButton() {
+    const btn = document.getElementById('compare-samples-btn');
+    if (!btn) return;
+
+    let badge = btn.querySelector('.compare-badge');
+    if (state.selectedSamples.length > 0) {
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'compare-badge';
+            btn.appendChild(badge);
+        }
+        badge.textContent = state.selectedSamples.length;
+        btn.classList.add('has-selection');
+    } else {
+        if (badge) badge.remove();
+        btn.classList.remove('has-selection');
+    }
 }
 
 export function renderTable() {
@@ -36,7 +82,7 @@ export function renderTable() {
     if (state.filteredData.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align:center;padding:40px;color:var(--text-tertiary);">
+                <td colspan="9" style="text-align:center;padding:40px;color:var(--text-tertiary);">
                     No references match the current filters
                 </td>
             </tr>
@@ -64,6 +110,7 @@ export function renderTable() {
                 </td>
                 <td class="cell-number">${n(d.significance).toFixed(1)}</td>
                 <td class="cell-number">${fmt(d.n_reads)}</td>
+                <td class="cell-number">${fmt(d.n_alns)}</td>
                 <td><span class="status-badge ${status}">${status}</span></td>
             </tr>
         `;
@@ -72,7 +119,7 @@ export function renderTable() {
     // Row click handlers
     tbody.querySelectorAll('tr').forEach(row => {
         row.addEventListener('click', async (e) => {
-            const { selectReference, toggleCompare } = await import('./actions.js?v=50');
+            const { selectReference, toggleCompare } = await import('./actions.js?v=83');
             if (e.target.closest('.compare-checkbox')) {
                 toggleCompare(Number(row.dataset.id));
             } else {
@@ -167,17 +214,17 @@ function showContextMenu(x, y, data) {
             const taxon = item.dataset.taxon;
 
             if (action === 'track-species' || action === 'track-genus' || action === 'track-family') {
-                const { trackTaxonAcrossSamples } = await import('./compare.js?v=50');
+                const { trackTaxonAcrossSamples } = await import('./compare.js?v=84');
                 const level = action.replace('track-', '');
                 trackTaxonAcrossSamples(taxon, level);
             } else if (action === 'add-compare') {
-                const { addToBasket } = await import('./compare.js?v=50');
+                const { addToBasket } = await import('./compare.js?v=84');
                 // Note: addToBasket is on window, but we can also use direct import
                 if (window.addToBasket) {
                     window.addToBasket(data.id, state.currentSample);
                 }
             } else if (action === 'view-details') {
-                const { selectReference } = await import('./actions.js?v=50');
+                const { selectReference } = await import('./actions.js?v=83');
                 selectReference(data.id);
             }
 
