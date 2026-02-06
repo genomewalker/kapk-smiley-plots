@@ -1,7 +1,7 @@
 // ========== UI EVENT LISTENERS ==========
-import { state } from './state.js?v=50';
-import { applyFilters, exportData } from './data.js?v=50';
-import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=50';
+import { state } from './state.js?v=83';
+import { applyFilters, exportData } from './data.js?v=83';
+import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=83';
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -132,7 +132,7 @@ window.searchSelectTaxon = function(taxonName, level) {
         .replace(/&amp;/g, '&');
 
     // Open tracking modal for this taxon
-    import('./compare.js?v=50').then(({ trackTaxonAcrossSamples }) => {
+    import('./compare.js?v=84').then(({ trackTaxonAcrossSamples }) => {
         trackTaxonAcrossSamples(unescaped, level);
     });
 };
@@ -160,15 +160,17 @@ export function closeDetailPanel() {
 
 // Update filter bar display
 export function updateFilterBar() {
-    const filterBar = document.getElementById('table-filter-bar');
+    const filterIndicator = document.getElementById('filter-indicator');
     const chipsContainer = document.getElementById('filter-path-chips');
 
+    if (!filterIndicator || !chipsContainer) return;
+
     if (state.filterPath.length === 0) {
-        filterBar.classList.remove('visible');
+        filterIndicator.classList.remove('visible');
         return;
     }
 
-    filterBar.classList.add('visible');
+    filterIndicator.classList.add('visible');
 
     // Create chips for each level in the filter path
     const levelNames = ['Domain', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species'];
@@ -309,12 +311,15 @@ export function setupEventListeners() {
     // Export
     document.getElementById('export-btn').addEventListener('click', exportData);
 
-    // Compare button
-    document.getElementById('compare-btn').addEventListener('click', () => {
-        import('./compare.js?v=50').then(({ openComparePanel }) => {
-            openComparePanel();
+    // Compare button (basket comparison)
+    const compareBtn = document.getElementById('compare-btn');
+    if (compareBtn) {
+        compareBtn.addEventListener('click', () => {
+            import('./compare.js?v=84').then(({ openComparePanel }) => {
+                openComparePanel();
+            });
         });
-    });
+    }
 
     // Mobile menu toggle
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');

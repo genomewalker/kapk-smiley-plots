@@ -3,6 +3,8 @@ export const state = {
     db: null,
     conn: null,
     currentSample: null,
+    samples: [], // All available samples
+    selectedSamples: [], // Samples selected for comparison
     sampleData: [],
     filteredData: [],
     selectedRef: null,

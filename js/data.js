@@ -1,8 +1,8 @@
 // ========== DATA LOADING ==========
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
-import { state } from './state.js?v=50';
-import { convertResults, getStatus } from './utils.js?v=50';
-import { renderSampleList, renderTable, buildSunburst } from './table.js?v=50';
+import { state } from './state.js?v=83';
+import { convertResults, getStatus } from './utils.js?v=83';
+import { renderSampleList, renderTable, buildSunburst } from './table.js?v=83';
 
 export async function initDuckDB() {
     const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
@@ -46,11 +46,12 @@ export async function loadSamples() {
     `);
 
     const samples = convertResults(result);
+    state.samples = samples; // Store for later use
     document.getElementById('sample-count').textContent = samples.length;
     renderSampleList(samples);
 
     if (samples.length > 0) {
-        const { selectSample } = await import('./actions.js?v=50');
+        const { selectSample } = await import('./actions.js?v=83');
 
         // Try to restore from localStorage
         const savedSample = localStorage.getItem('kapk-selected-sample');
