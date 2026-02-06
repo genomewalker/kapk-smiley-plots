@@ -1,10 +1,18 @@
 :root {
-    /* Base palette - warm light */
-    --bg-deep: #ffffff;
-    --bg-base: #f8f7f6;
-    --bg-raised: #f0efed;
-    --bg-elevated: #e8e6e3;
-    --bg-hover: #dfddd9;
+    /* Base palette - warm light with archaeological depth */
+    --bg-deep: #fdfcfb;
+    --bg-base: #f7f5f2;
+    --bg-raised: #efede8;
+    --bg-elevated: #e6e3dc;
+    --bg-hover: #dedad0;
+
+    /* Aged parchment overlay for premium feel */
+    --parchment-gradient: linear-gradient(
+        145deg,
+        rgba(212, 165, 116, 0.03) 0%,
+        rgba(139, 115, 85, 0.02) 50%,
+        transparent 100%
+    );
 
     /* Borders */
     --border-subtle: #e5e3df;
@@ -17,19 +25,25 @@
     --text-tertiary: #8c867d;
     --text-inverse: #ffffff;
 
-    /* Accent - Ancient amber */
-    --accent-primary: #d4a574;
-    --accent-secondary: #b8956a;
+    /* Accent - Deeper archaeological amber */
+    --accent-primary: #c9915a;
+    --accent-secondary: #a87a4c;
     --accent-muted: #8b7355;
+    --accent-glow: rgba(201, 145, 90, 0.15);
 
-    /* Semantic - Damage indicators */
-    --damage-5prime: #e85d5d;
-    --damage-3prime: #5d9ee8;
-    --damage-model: #a855f7;
+    /* Patina - Aged copper accent for special elements */
+    --patina-green: #5a8a7a;
+    --patina-light: #7ba898;
 
-    /* Status colors */
-    --status-damaged: #22c55e;
+    /* Semantic - Enhanced damage colors with more contrast */
+    --damage-5prime: #d94f4f;
+    --damage-3prime: #4a8ed4;
+    --damage-model: #9333ea;
+
+    /* Status colors - Ancient/Verified */
+    --status-damaged: #2d9659;
     --status-non-damaged: #6b7280;
+    --status-ancient-glow: rgba(45, 150, 89, 0.12);
 
     /* Spacing */
     --space-xs: 4px;
@@ -40,6 +54,7 @@
     --space-2xl: 32px;
 
     /* Typography */
+    --font-display: 'Source Sans 3', -apple-system, sans-serif;
     --font-sans: 'Source Sans 3', -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
@@ -52,6 +67,7 @@
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.08);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
     --shadow-lg: 0 8px 24px rgba(0,0,0,0.16);
+    --shadow-glow: 0 4px 16px rgba(139, 115, 85, 0.12);
 
     /* Radii */
     --radius-sm: 4px;
@@ -6536,4 +6552,293 @@ body {
     .status-right {
         display: none;
     }
+}
+
+/* ========== ARCHAEOLOGICAL SCIENCE ENHANCEMENTS ========== */
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes revealScale {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes modalEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes dataReveal {
+    0% {
+        clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+        opacity: 0.5;
+    }
+    100% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        opacity: 1;
+    }
+}
+
+@keyframes statusPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(45, 150, 89, 0.4); }
+    50% { box-shadow: 0 0 0 4px rgba(45, 150, 89, 0); }
+}
+
+/* Apply animations to main content */
+.main-panel {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.sunburst-container {
+    animation: revealScale 0.5s ease-out 0.1s both;
+}
+
+/* Table rows - no animation to avoid re-render flicker */
+
+/* Modal animations */
+.compare-modal.flagship,
+.tracking-modal,
+.detail-modal-overlay.open .detail-modal-content {
+    animation: modalEnter 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced Logo */
+.logo-text {
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.logo-text span {
+    font-weight: 400;
+    color: var(--accent-muted);
+}
+
+.logo-icon {
+    background: linear-gradient(
+        135deg,
+        var(--damage-5prime) 0%,
+        var(--accent-primary) 50%,
+        var(--damage-3prime) 100%
+    );
+    box-shadow:
+        0 2px 8px rgba(217, 79, 79, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced table row hover */
+.data-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+    background: rgba(212, 165, 116, 0.04);
+    box-shadow: inset 3px 0 0 var(--accent-primary);
+}
+
+/* Enhanced status badges - Specimen Tag style */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: 2px;
+    position: relative;
+}
+
+.status-badge.damaged {
+    background: linear-gradient(135deg, #2d9659 0%, #238c4e 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(45, 150, 89, 0.25);
+}
+
+.status-badge.non-damaged {
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-default);
+}
+
+/* Enhanced buttons - Brass Instruments feel */
+.btn-primary,
+.btn-taxa {
+    background: linear-gradient(
+        180deg,
+        var(--accent-primary) 0%,
+        var(--accent-secondary) 100%
+    );
+    color: var(--text-inverse);
+    border: none;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        0 2px 4px rgba(139, 115, 85, 0.3);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover,
+.btn-taxa:hover {
+    background: linear-gradient(
+        180deg,
+        #d4a066 0%,
+        var(--accent-secondary) 100%
+    );
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 4px 8px rgba(139, 115, 85, 0.35);
+}
+
+.btn-primary:active,
+.btn-taxa:active {
+    transform: translateY(0);
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.1),
+        0 1px 2px rgba(139, 115, 85, 0.2);
+}
+
+/* Enhanced modal headers - Museum Exhibit style */
+.compare-hero,
+.tracking-header {
+    background:
+        linear-gradient(180deg,
+            rgba(139, 115, 85, 0.08) 0%,
+            transparent 100%
+        ),
+        var(--bg-elevated);
+    border-bottom: 1px solid var(--border-default);
+    position: relative;
+    overflow: hidden;
+}
+
+.compare-hero::before,
+.tracking-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0c16.569 0 30 13.431 30 30 0 16.569-13.431 30-30 30C13.431 60 0 46.569 0 30 0 13.431 13.431 0 30 0zm0 10c-11.046 0-20 8.954-20 20s8.954 20 20 20 20-8.954 20-20-8.954-20-20-20z' fill='%238b7355' fill-opacity='0.02'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.compare-hero h1,
+.tracking-hero h1 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+}
+
+/* Enhanced cards - Field Notes style */
+.smiley-card,
+.tracking-card {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.smiley-card::before,
+.tracking-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(
+        -45deg,
+        rgba(139, 115, 85, 0.06) 0%,
+        transparent 50%
+    );
+    pointer-events: none;
+}
+
+.smiley-card:hover,
+.tracking-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 16px rgba(139, 115, 85, 0.12),
+        0 0 0 1px var(--accent-primary);
+}
+
+/* Icon rotation on hover */
+.btn svg,
+.action-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.btn:hover svg,
+.action-btn:hover svg {
+    transform: rotate(-3deg) scale(1.05);
+}
+
+/* Sample damage indicator pulse */
+.sample-item .damage-indicator {
+    animation: statusPulse 3s ease-in-out infinite;
+    animation-play-state: paused;
+}
+
+.sample-item:hover .damage-indicator {
+    animation-play-state: running;
+}
+
+/* Section headers */
+.section-header h2,
+.detail-section-title {
+    font-family: var(--font-sans);
+    font-weight: 600;
+}
+
+/* Hero badge enhancement */
+.hero-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    background: var(--accent-glow);
+    color: var(--accent-secondary);
+    padding: 4px 12px;
+    border-radius: 2px;
+    border: 1px solid rgba(201, 145, 90, 0.3);
+}
+
+/* Data reveal animation for detail content */
+.detail-content {
+    animation: dataReveal 0.5s ease-out;
+}
+
+/* Enhanced filter indicator visibility */
+#filter-indicator {
+    background: var(--accent-glow);
+    border: 1px solid rgba(201, 145, 90, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+}
+
+#filter-indicator:not(:empty) {
+    display: flex !important;
 }
