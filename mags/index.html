@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGs — Kap København</title>
+    <meta name="description" content="Metagenome-assembled genomes from the Kap København sample 119_50 — AMBER binning">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css?v=85">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        html, body {
+            height: auto;
+            overflow: auto;
+            background: var(--bg-deep);
+        }
+
+        .page-header {
+            padding: var(--space-lg) var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            background: var(--bg-base);
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--text-tertiary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color var(--transition-fast);
+        }
+        .back-link:hover { color: var(--text-primary); }
+        .back-link svg { width: 16px; height: 16px; }
+
+        .page-header-content { flex: 1; }
+        .page-header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .page-header-sub {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .page-main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-2xl) var(--space-xl);
+        }
+
+        /* ─── Summary cards ─── */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-lg);
+            margin-bottom: var(--space-2xl);
+        }
+        .summary-card {
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+        }
+        .summary-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            font-family: var(--font-mono);
+        }
+        .summary-card-label {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            margin-top: var(--space-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .summary-card.accent { border-color: var(--accent-primary); }
+        .summary-card.accent .summary-card-value { color: var(--accent-secondary); }
+
+        /* ─── Section headings ─── */
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: var(--space-md);
+        }
+
+        /* ─── MAGs table ─── */
+        .table-wrapper {
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .table-controls {
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            outline: none;
+        }
+        .search-input:focus { border-color: var(--accent-primary); }
+
+        .filter-select {
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.875rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .mags-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .mags-table th {
+            background: var(--bg-raised);
+            padding: var(--space-sm) var(--space-md);
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid var(--border-default);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+        .mags-table th:hover { color: var(--text-primary); }
+        .mags-table th.sorted { color: var(--accent-primary); }
+        .sort-icon { margin-left: 4px; opacity: 0.5; }
+        .mags-table th.sorted .sort-icon { opacity: 1; }
+
+        .mags-table td {
+            padding: var(--space-sm) var(--space-md);
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+        .mags-table tr:last-child td { border-bottom: none; }
+
+        .mags-table tr:hover td { background: var(--bg-raised); }
+
+        .mags-table tr.focal td {
+            background: rgba(201, 145, 90, 0.06);
+        }
+        .mags-table tr.focal:hover td {
+            background: rgba(201, 145, 90, 0.1);
+        }
+
+        .bin-name {
+            font-family: var(--font-mono);
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+        .bin-link {
+            text-decoration: none;
+            color: var(--accent-secondary);
+        }
+        .bin-link:hover { text-decoration: underline; }
+
+        .quality-hq {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--status-damaged);
+            background: rgba(45, 150, 89, 0.1);
+            padding: 2px 7px;
+            border-radius: 99px;
+        }
+        .quality-mq {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-secondary);
+            background: rgba(201, 145, 90, 0.12);
+            padding: 2px 7px;
+            border-radius: 99px;
+        }
+
+        .badge-ancient {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--damage-5prime);
+            background: rgba(217, 79, 79, 0.1);
+            padding: 2px 7px;
+            border-radius: 99px;
+        }
+        .badge-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            background: var(--bg-elevated);
+            padding: 2px 7px;
+            border-radius: 99px;
+        }
+        .badge-moderate {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--damage-3prime);
+            background: rgba(74, 142, 212, 0.1);
+            padding: 2px 7px;
+            border-radius: 99px;
+        }
+
+        .badge-pass {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--patina-green);
+            background: rgba(90, 138, 122, 0.12);
+            padding: 2px 7px;
+            border-radius: 99px;
+        }
+        .badge-fail {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            background: var(--bg-elevated);
+            padding: 2px 7px;
+            border-radius: 99px;
+        }
+
+        .completeness-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        .bar-track {
+            flex: 1;
+            height: 5px;
+            background: var(--bg-elevated);
+            border-radius: 99px;
+            overflow: hidden;
+            min-width: 50px;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            background: var(--accent-primary);
+        }
+        .bar-value {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            min-width: 42px;
+            text-align: right;
+        }
+
+        .contam-value {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+        .contam-low { color: var(--patina-green); }
+        .contam-mid { color: var(--accent-primary); }
+        .contam-high { color: var(--damage-5prime); }
+
+        .taxonomy-cell {
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .taxonomy-domain {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-right: 4px;
+        }
+        .domain-archaea {
+            color: var(--damage-model);
+            background: rgba(147, 51, 234, 0.1);
+        }
+        .domain-bacteria {
+            color: var(--damage-3prime);
+            background: rgba(74, 142, 212, 0.1);
+        }
+
+        .size-value {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: var(--bg-raised);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+        .download-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+        .download-btn svg { width: 12px; height: 12px; }
+
+        /* ─── Focal bin_4 section ─── */
+        .focal-section {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .focal-hero {
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            margin-bottom: var(--space-lg);
+        }
+
+        .focal-hero-header {
+            background: linear-gradient(135deg, rgba(201, 145, 90, 0.12) 0%, rgba(147, 51, 234, 0.06) 100%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: var(--space-xl) var(--space-xl);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-xl);
+        }
+
+        .focal-archaea-badge {
+            background: rgba(147, 51, 234, 0.12);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm) var(--space-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .focal-archaea-badge .arch-icon {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+        .focal-archaea-badge .arch-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--damage-model);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 4px;
+        }
+
+        .focal-hero-text { flex: 1; }
+        .focal-bin-name {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            margin-bottom: var(--space-xs);
+        }
+        .focal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin-bottom: var(--space-sm);
+        }
+        .focal-taxonomy {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        .focal-stasis-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(45, 150, 89, 0.1);
+            border: 1px solid rgba(45, 150, 89, 0.25);
+            color: var(--status-damaged);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 99px;
+            margin-top: var(--space-sm);
+        }
+
+        .focal-stats-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            border-top: 1px solid var(--border-subtle);
+        }
+        .focal-stat {
+            padding: var(--space-md) var(--space-lg);
+            border-right: 1px solid var(--border-subtle);
+        }
+        .focal-stat:last-child { border-right: none; }
+        .focal-stat-label {
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+        .focal-stat-value {
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .focal-stat-unit {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-weight: 400;
+        }
+
+        /* ─── Genome versions ─── */
+        .genome-versions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+        .genome-version-card {
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+        }
+        .genome-version-card.highlight {
+            border-color: var(--accent-primary);
+        }
+        .gv-tag {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: var(--space-xs);
+        }
+        .gv-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+        }
+        .gv-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: var(--space-md);
+        }
+        .gv-meta {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+            margin-bottom: var(--space-md);
+        }
+        .gv-download {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-raised);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            width: 100%;
+            justify-content: center;
+        }
+        .gv-download:hover {
+            background: var(--bg-elevated);
+            border-color: var(--accent-primary);
+        }
+        .gv-download svg { width: 14px; height: 14px; color: var(--text-tertiary); }
+
+        /* ─── Interactive panels ─── */
+        .interactive-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .panel {
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .panel-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        .panel-body {
+            padding: var(--space-lg);
+        }
+
+        /* ─── SNP Tree ─── */
+        .tree-container {
+            width: 100%;
+            position: relative;
+        }
+
+        #snp-tree svg {
+            display: block;
+            width: 100%;
+        }
+
+        .tree-node circle {
+            fill: var(--bg-base);
+            stroke: var(--accent-primary);
+            stroke-width: 1.5px;
+        }
+        .tree-node.leaf circle {
+            fill: var(--accent-muted);
+        }
+        .tree-node.focal circle {
+            fill: var(--damage-model);
+            stroke: var(--damage-model);
+            r: 6;
+        }
+        .tree-node.ancient-ref circle {
+            fill: var(--damage-5prime);
+            stroke: var(--damage-5prime);
+        }
+
+        .tree-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            fill: var(--text-secondary);
+        }
+        .tree-label.focal {
+            fill: var(--damage-model);
+            font-weight: 600;
+        }
+        .tree-label.ancient-ref {
+            fill: var(--damage-5prime);
+            font-weight: 600;
+        }
+
+        .tree-link {
+            fill: none;
+            stroke: var(--border-default);
+            stroke-width: 1.5px;
+        }
+
+        .tree-support {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            fill: var(--text-tertiary);
+        }
+
+        /* ─── FastANI chart ─── */
+        .ani-chart {
+            width: 100%;
+        }
+
+        .ani-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+        .ani-row:last-child { margin-bottom: 0; }
+
+        .ani-label {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            width: 130px;
+            flex-shrink: 0;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ani-bar-track {
+            flex: 1;
+            height: 20px;
+            background: var(--bg-raised);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            position: relative;
+        }
+        .ani-bar-fill {
+            height: 100%;
+            border-radius: var(--radius-sm);
+            transition: width 0.6s ease;
+        }
+        .ani-bar-fill.top { background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); }
+        .ani-bar-fill.mid { background: var(--bg-elevated); }
+        .ani-value {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            width: 52px;
+            flex-shrink: 0;
+            text-align: right;
+        }
+        .ani-value.top { color: var(--accent-secondary); font-weight: 600; }
+
+        /* ─── Damage chart ─── */
+        .damage-profile {
+            width: 100%;
+        }
+
+        #damage-chart svg {
+            display: block;
+            width: 100%;
+        }
+
+        /* ─── SNP counts panel ─── */
+        .snp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        .snp-table th {
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: var(--space-xs) var(--space-sm);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .snp-table td {
+            padding: var(--space-xs) var(--space-sm);
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            vertical-align: middle;
+        }
+        .snp-table tr:last-child td { border-bottom: none; }
+        .snp-table .highlight-row td { color: var(--status-damaged); font-weight: 600; }
+
+        .snp-pct-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .snp-mini-track {
+            width: 60px;
+            height: 5px;
+            background: var(--bg-elevated);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .snp-mini-fill {
+            height: 100%;
+            background: var(--damage-5prime);
+            border-radius: 99px;
+        }
+
+        /* ─── Full-width tree panel ─── */
+        .full-panel {
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: var(--space-lg);
+        }
+
+        /* ─── Tabs ─── */
+        .tab-bar {
+            display: flex;
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0 var(--space-lg);
+        }
+        .tab {
+            padding: var(--space-md) var(--space-lg);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all var(--transition-fast);
+        }
+        .tab:hover { color: var(--text-primary); }
+        .tab.active {
+            color: var(--accent-secondary);
+            border-bottom-color: var(--accent-primary);
+        }
+        .tab-content { display: none; padding: var(--space-lg); }
+        .tab-content.active { display: block; }
+
+        /* ─── Stasis callout ─── */
+        .stasis-callout {
+            background: rgba(45, 150, 89, 0.06);
+            border: 1px solid rgba(45, 150, 89, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+        .stasis-callout-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--status-damaged);
+            margin-bottom: var(--space-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        .stasis-callout-body {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ─── Legend ─── */
+        .legend {
+            display: flex;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+            margin-top: var(--space-md);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .summary-cards { grid-template-columns: repeat(2, 1fr); }
+            .genome-versions { grid-template-columns: 1fr; }
+            .interactive-grid { grid-template-columns: 1fr; }
+            .focal-stats-row { grid-template-columns: repeat(3, 1fr); }
+            .focal-hero-header { flex-direction: column; }
+        }
+        @media (max-width: 600px) {
+            .page-main { padding: var(--space-lg); }
+            .summary-cards { grid-template-columns: repeat(2, 1fr); }
+            .focal-stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <a href="../" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+        </a>
+        <div class="page-header-content">
+            <div class="page-header-title">Metagenome-Assembled Genomes — sample 119_50</div>
+            <div class="page-header-sub">Co-assembly of 119 samples · AMBER v1.0.0 · 3 independent runs · double-stranded library</div>
+        </div>
+    </header>
+
+    <main class="page-main">
+
+        <!-- Summary cards -->
+        <div class="summary-cards">
+            <div class="summary-card accent">
+                <div class="summary-card-value">20</div>
+                <div class="summary-card-label">Total HQ+MQ bins</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-value">11</div>
+                <div class="summary-card-label">High-quality (≥90% / &lt;5%)</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-value">9</div>
+                <div class="summary-card-label">Medium-quality (≥50%)</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-value">18/20</div>
+                <div class="summary-card-label">Passed GUNC</div>
+            </div>
+        </div>
+        <div style="margin-bottom:var(--space-2xl);">
+            <a href="data/all_mags.zip" download class="gv-download" style="display:inline-flex;max-width:320px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download all MAGs (all_mags.zip · 13 MB)
+            </a>
+        </div>
+
+        <!-- ─── bin_4 Focal section ─── -->
+        <div class="focal-section">
+            <div class="section-title">Focal MAG</div>
+
+            <div class="focal-hero">
+                <div class="focal-hero-header">
+                    <div class="focal-archaea-badge">
+                        <div class="arch-icon">🧬</div>
+                        <div class="arch-label">Archaea</div>
+                    </div>
+                    <div class="focal-hero-text">
+                        <div class="focal-bin-name">bin_4</div>
+                        <div class="focal-title">Methanoflorentales</div>
+                        <div class="focal-taxonomy">d__Archaea · p__Halobacteriota · c__Bog-38 · o__Bog-38</div>
+                        <div class="focal-stasis-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            Evolutionary stasis confirmed — only 2 SNPs over 2 million years
+                        </div>
+                    </div>
+                </div>
+                <div class="focal-stats-row">
+                    <div class="focal-stat">
+                        <div class="focal-stat-label">Completeness</div>
+                        <div class="focal-stat-value">92.3<span class="focal-stat-unit">%</span></div>
+                    </div>
+                    <div class="focal-stat">
+                        <div class="focal-stat-label">Contamination</div>
+                        <div class="focal-stat-value">1.9<span class="focal-stat-unit">%</span></div>
+                    </div>
+                    <div class="focal-stat">
+                        <div class="focal-stat-label">Genome size</div>
+                        <div class="focal-stat-value">1.91<span class="focal-stat-unit"> Mbp</span></div>
+                    </div>
+                    <div class="focal-stat">
+                        <div class="focal-stat-label">N50</div>
+                        <div class="focal-stat-value">7,614<span class="focal-stat-unit"> bp</span></div>
+                    </div>
+                    <div class="focal-stat">
+                        <div class="focal-stat-label">Ancient fraction</div>
+                        <div class="focal-stat-value">63.5<span class="focal-stat-unit">%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Genome versions -->
+            <div class="section-title">Genome versions — download</div>
+            <div class="genome-versions">
+                <div class="genome-version-card">
+                    <div class="gv-tag">kapk_dec</div>
+                    <div class="gv-name">Assembly consensus</div>
+                    <div class="gv-desc">Full bin_4 assembly — combined ancient + modern reads. Reference genome for the Kap København Methanoflorentales population.</div>
+                    <div class="gv-meta">1.91 Mbp · 446 contigs · GC 48.0%</div>
+                    <a href="data/bin_4.fa.gz" download class="gv-download">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        bin_4.fa.gz
+                    </a>
+                </div>
+                <div class="genome-version-card highlight">
+                    <div class="gv-tag">kapk_anc</div>
+                    <div class="gv-name">Ancient consensus</div>
+                    <div class="gv-desc">Reads with p<sub>ancient</sub> &gt; 0.8. The ~2 Ma archaeal genome. C→T at 5′ pos1 = 37.2%, G→A at 3′ pos1 = 37.5%.</div>
+                    <div class="gv-meta">1.86 Mbp · ancient fraction · λ₅′ = 0.58</div>
+                    <a href="data/kapk_anc.fa.gz" download class="gv-download">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        kapk_anc.fa.gz
+                    </a>
+                </div>
+                <div class="genome-version-card">
+                    <div class="gv-tag">kapk_mod</div>
+                    <div class="gv-name">Modern consensus</div>
+                    <div class="gv-desc">Reads with p<sub>ancient</sub> &lt; 0.2. Contemporary population in the same sediment. Fragment mean 129.4 bp.</div>
+                    <div class="gv-meta">1.87 Mbp · modern fraction · 257,484 reads</div>
+                    <a href="data/kapk_mod.fa.gz" download class="gv-download">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        kapk_mod.fa.gz
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stasis callout -->
+            <div class="stasis-callout">
+                <div class="stasis-callout-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Evolutionary stasis — key evidence
+                </div>
+                <div class="stasis-callout-body">
+                    Codon alignment of 38 archaeal marker genes (78 taxa, 4,406 nt) shows <strong>only 2 SNPs</strong> between the ancient (~2 Ma) and modern Kap København Methanoflorentales. Neither substitution is a damage-type (C→T or G→A). The ancient genome is within the species boundary (&gt;95% ANI) with extant permafrost relatives and shares &gt;98.5% ANI with the closest references. Molecular dating (BEAST2 codon tip-dating) estimates the ancient–modern MRCA at 2.01 Ma, with a divergence clock rate of 1.13 × 10⁻⁸ substitutions/site/year.
+                </div>
+            </div>
+
+            <!-- ── Paper figure panels (A / B / C) ── -->
+            <div class="full-panel" style="margin-bottom:var(--space-lg);">
+                <div class="panel-header">
+                    <div class="panel-title">Figure — Evolutionary stasis evidence (bin_4 Methanoflorentales)</div>
+                    <div class="panel-subtitle">Replicates paper Figure 7</div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1.2fr; border-top:1px solid var(--border-subtle);">
+
+                    <!-- Panel A: smiley plot -->
+                    <div style="padding:var(--space-lg); border-right:1px solid var(--border-subtle);">
+                        <div style="font-size:0.72rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:var(--space-sm);">A &nbsp;·&nbsp; Damage profile (smiley)</div>
+                        <div id="smiley-plot"></div>
+                        <div class="legend" style="margin-top:var(--space-sm);">
+                            <div class="legend-item"><div class="legend-dot" style="background:#8B1A1A"></div>Ancient</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#4a8ed4"></div>Modern</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#888"></div>Ambiguous</div>
+                        </div>
+                    </div>
+
+                    <!-- Panel B: fragment lengths -->
+                    <div style="padding:var(--space-lg); border-right:1px solid var(--border-subtle);">
+                        <div style="font-size:0.72rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:var(--space-sm);">B &nbsp;·&nbsp; Fragment length distribution</div>
+                        <div id="frag-plot"></div>
+                        <div class="legend" style="margin-top:var(--space-sm);">
+                            <div class="legend-item"><div class="legend-dot" style="background:#8B1A1A"></div>Ancient (μ=61 bp)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#2a7a5a"></div>Modern (μ=129 bp)</div>
+                        </div>
+                    </div>
+
+                    <!-- Panel C: SNP tree -->
+                    <div style="padding:var(--space-lg);">
+                        <div style="font-size:0.72rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:var(--space-sm);">C &nbsp;·&nbsp; SNP tree (Tv-only · 9 taxa)</div>
+                        <div class="tree-container" id="snp-tree"></div>
+                        <div class="legend" style="margin-top:var(--space-sm);">
+                            <div class="legend-item">
+                                <svg width="12" height="12"><rect x="1" y="1" width="10" height="10" fill="#8B1A1A"/></svg>
+                                KapK ancient
+                            </div>
+                            <div class="legend-item">
+                                <svg width="12" height="12"><rect x="1" y="1" width="10" height="10" fill="none" stroke="#888" stroke-width="1.5"/></svg>
+                                S17 / References
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SNP counts + FastANI -->
+            <div class="interactive-grid">
+                <!-- SNP counts -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">SNP counts — core genome</div>
+                        <div class="panel-subtitle">Damage-corrected comparisons</div>
+                    </div>
+                    <div class="panel-body">
+                        <table class="snp-table">
+                            <thead>
+                                <tr>
+                                    <th>Comparison</th>
+                                    <th>Raw SNPs</th>
+                                    <th>Damage-type</th>
+                                    <th>Tv-only</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="highlight-row">
+                                    <td>ancient vs KapK modern</td>
+                                    <td>1,192</td>
+                                    <td><div class="snp-pct-bar"><div class="snp-mini-track"><div class="snp-mini-fill" style="width:21%"></div></div>250 (21%)</div></td>
+                                    <td>942</td>
+                                </tr>
+                                <tr>
+                                    <td>ancient vs S17 modern</td>
+                                    <td>9,401</td>
+                                    <td><div class="snp-pct-bar"><div class="snp-mini-track"><div class="snp-mini-fill" style="width:73%"></div></div>6,822 (73%)</div></td>
+                                    <td>1,512</td>
+                                </tr>
+                                <tr>
+                                    <td>ancient vs NAY3300025461b7</td>
+                                    <td>8,233</td><td>—</td><td>—</td>
+                                </tr>
+                                <tr>
+                                    <td>ancient vs SOIL100000032</td>
+                                    <td>10,363</td><td>—</td><td>—</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top:var(--space-md); padding-top:var(--space-md); border-top:1px solid var(--border-subtle); font-size:0.82rem; color:var(--text-secondary); line-height:1.6;">
+                            Codon alignment (38 markers, 78 taxa, 4,406 nt):<br>
+                            <strong style="color:var(--status-damaged);">2 SNPs</strong> ancient vs KapK modern (0.03%) — both transversions, zero damage-type.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FastANI -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">FastANI — closest Methanoflorentales</div>
+                        <div class="panel-subtitle">bin_4 vs reference genomes</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="ani-chart" id="ani-chart"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ─── All MAGs table ─── -->
+        <div class="section-title">All HQ + MQ bins</div>
+        <div class="table-wrapper">
+            <div class="table-controls">
+                <input type="text" class="search-input" id="table-search" placeholder="Search taxonomy, bin name…">
+                <select class="filter-select" id="filter-quality">
+                    <option value="">All quality</option>
+                    <option value="HQ">HQ only</option>
+                    <option value="MQ">MQ only</option>
+                </select>
+                <select class="filter-select" id="filter-damage">
+                    <option value="">All damage</option>
+                    <option value="ancient">Ancient</option>
+                    <option value="modern">Modern</option>
+                </select>
+                <select class="filter-select" id="filter-domain">
+                    <option value="">All domains</option>
+                    <option value="Archaea">Archaea</option>
+                    <option value="Bacteria">Bacteria</option>
+                </select>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="mags-table" id="mags-table">
+                    <thead>
+                        <tr>
+                            <th data-col="bin">Bin <span class="sort-icon">↕</span></th>
+                            <th data-col="quality">Quality <span class="sort-icon">↕</span></th>
+                            <th data-col="taxonomy">Taxonomy</th>
+                            <th data-col="completeness">Compl. <span class="sort-icon">↕</span></th>
+                            <th data-col="contamination">Contam. <span class="sort-icon">↕</span></th>
+                            <th data-col="size">Size <span class="sort-icon">↕</span></th>
+                            <th data-col="n50">N50 <span class="sort-icon">↕</span></th>
+                            <th data-col="gc">GC% <span class="sort-icon">↕</span></th>
+                            <th data-col="gunc">GUNC</th>
+                            <th data-col="damage">Damage</th>
+                            <th>Smiley</th>
+                            <th>FASTA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mags-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+    // ────────────────────────────────────────────────────────
+    // DATA
+    // ────────────────────────────────────────────────────────
+    const BINS = [
+        { bin: "bin_3",  completeness: 72.95, contamination: 3.06, size: 1033156, n50: 1403,  gc: 0.29, contigs: 713,  gunc_pass: true,  gunc_level: "kingdom",  damage: "ancient",  taxonomy: "d__Bacteria;p__Bacteroidota;c__Bacteroidia;o__Flavobacteriales;f__Flavobacteriaceae", file: "bin_3.fa.gz" },
+        { bin: "bin_4",  completeness: 92.28, contamination: 1.90, size: 1909540, n50: 7614,  gc: 0.48, contigs: 446,  gunc_pass: true,  gunc_level: "phylum",   damage: "ancient",  taxonomy: "d__Archaea;p__Halobacteriota;c__Bog-38;o__Bog-38;g__Bog-38", file: "bin_4.fa.gz", focal: true },
+        { bin: "bin_6",  completeness: 55.89, contamination: 1.96, size: 2092902, n50: 2025,  gc: 0.58, contigs: 1096, gunc_pass: true,  gunc_level: "order",    damage: "modern",   taxonomy: "d__Bacteria;p__Pseudomonadota;c__Gammaproteobacteria;o__Pseudomonadales;g__UBA5078", file: "bin_6.fa.gz" },
+        { bin: "bin_8",  completeness: 90.59, contamination: 2.29, size: 2758074, n50: 11791, gc: 0.55, contigs: 352,  gunc_pass: true,  gunc_level: "kingdom",  damage: "modern",   taxonomy: "d__Bacteria;p__Pseudomonadota;c__Gammaproteobacteria;o__Pseudomonadales;g__Marinobacter;s__Marinobacter sp023311895", file: "bin_8.fa.gz" },
+        { bin: "bin_10", completeness: 84.93, contamination: 4.97, size: 3268641, n50: 4313,  gc: 0.38, contigs: 939,  gunc_pass: true,  gunc_level: "genus",    damage: "modern",   taxonomy: "d__Bacteria;p__Bacteroidota;c__Bacteroidia;o__Flavobacteriales;g__Gillisia", file: "bin_10.fa.gz" },
+        { bin: "bin_15", completeness: 80.16, contamination: 2.71, size: 2575073, n50: 3106,  gc: 0.34, contigs: 960,  gunc_pass: false, gunc_level: "family",   damage: "modern",   taxonomy: "d__Bacteria;p__Bacteroidota;c__Bacteroidia;o__Flavobacteriales;g__Lutibacter;s__Lutibacter sp016649745", file: "bin_15.fa.gz" },
+        { bin: "bin_16", completeness: 73.64, contamination: 2.84, size: 2609108, n50: 3634,  gc: 0.66, contigs: 868,  gunc_pass: false, gunc_level: "genus",    damage: "modern",   taxonomy: "d__Bacteria;p__Actinomycetota;c__Actinomycetes;o__Actinomycetales;g__Cryobacterium", file: "bin_16.fa.gz" },
+        { bin: "bin_18", completeness: 82.72, contamination: 1.18, size: 2316322, n50: 3574,  gc: 0.38, contigs: 777,  gunc_pass: true,  gunc_level: "kingdom",  damage: "modern",   taxonomy: "d__Bacteria;p__Bacteroidota;c__Bacteroidia;o__Flavobacteriales;g__Aequorivita;s__Aequorivita antarctica", file: "bin_18.fa.gz" },
+        { bin: "bin_19", completeness: 79.71, contamination: 3.62, size: 2204991, n50: 7002,  gc: 0.64, contigs: 433,  gunc_pass: true,  gunc_level: "family",   damage: "modern",   taxonomy: "d__Bacteria;p__Actinomycetota;c__Actinomycetes;o__Actinomycetales;g__Demequina", file: "bin_19.fa.gz" },
+        { bin: "bin_24", completeness: 97.71, contamination: 0.23, size: 3194950, n50: 34351, gc: 0.46, contigs: 170,  gunc_pass: true,  gunc_level: "class",    damage: "modern",   taxonomy: "d__Bacteria;p__Pseudomonadota;c__Gammaproteobacteria;o__SZUA-229;g__GCA-2746365", file: "bin_24.fa.gz" },
+        { bin: "bin_26", completeness: 96.45, contamination: 2.09, size: 774169,  n50: 60110, gc: 0.46, contigs: 40,   gunc_pass: true,  gunc_level: "phylum",   damage: "modern",   taxonomy: "d__Bacteria;p__Patescibacteriota;c__Saccharimonadia;o__Saccharimonadales;g__Microsaccharimonas", file: "bin_26.fa.gz" },
+        { bin: "bin_28", completeness: 100.0, contamination: 4.45, size: 3633730, n50: 41489, gc: 0.65, contigs: 161,  gunc_pass: true,  gunc_level: "order",    damage: "modern",   taxonomy: "d__Bacteria;p__Actinomycetota;c__Actinomycetes;o__Propionibacteriales;g__Aeromicrobium", file: "bin_28.fa.gz" },
+        { bin: "bin_31", completeness: 84.61, contamination: 7.75, size: 1629389, n50: 2585,  gc: 0.67, contigs: 705,  gunc_pass: true,  gunc_level: "family",   damage: "modern",   taxonomy: "d__Bacteria;p__Actinomycetota;c__Actinomycetes;o__Actinomycetales;g__Demequina", file: "bin_31.fa.gz" },
+        { bin: "bin_32", completeness: 80.08, contamination: 4.36, size: 761126,  n50: 3352,  gc: 0.44, contigs: 281,  gunc_pass: true,  gunc_level: "phylum",   damage: "modern",   taxonomy: "d__Bacteria;p__Patescibacteriota;c__Saccharimonadia;o__Saccharimonadales;g__JACKGP01", file: "bin_32.fa.gz" },
+        { bin: "bin_35", completeness: 94.58, contamination: 0.90, size: 2453330, n50: 9273,  gc: 0.56, contigs: 359,  gunc_pass: true,  gunc_level: "family",   damage: "modern",   taxonomy: "d__Bacteria;p__Pseudomonadota;c__Alphaproteobacteria;o__Rhizobiales;g__Mariluticola", file: "bin_35.fa.gz" },
+        { bin: "bin_38", completeness: 94.96, contamination: 2.65, size: 3340001, n50: 16785, gc: 0.59, contigs: 291,  gunc_pass: true,  gunc_level: "order",    damage: "modern",   taxonomy: "d__Bacteria;p__Pseudomonadota;c__Gammaproteobacteria;o__Pseudomonadales;g__Halopseudomonas", file: "bin_38.fa.gz" },
+        { bin: "bin_42", completeness: 98.20, contamination: 0.05, size: 1115960, n50: 48592, gc: 0.38, contigs: 42,   gunc_pass: true,  gunc_level: "phylum",   damage: "ancient",  taxonomy: "d__Bacteria;p__Chlamydiota;c__Chlamydiia;o__Chlamydiales;g__CALTSX01", file: "bin_42.fa.gz" },
+        { bin: "bin_47", completeness: 90.14, contamination: 2.62, size: 3584076, n50: 40881, gc: 0.55, contigs: 132,  gunc_pass: true,  gunc_level: "order",    damage: "modern",   taxonomy: "d__Bacteria;p__Pseudomonadota;c__Gammaproteobacteria;o__Pseudomonadales;g__Marinobacter", file: "bin_47.fa.gz" },
+        { bin: "bin_53", completeness: 99.86, contamination: 1.86, size: 3299220, n50: 48207, gc: 0.56, contigs: 117,  gunc_pass: true,  gunc_level: "genus",    damage: "modern",   taxonomy: "d__Bacteria;p__Pseudomonadota;c__Alphaproteobacteria;o__Sphingomonadales;g__Parasphingorhabdus", file: "bin_53.fa.gz" },
+        { bin: "bin_77", completeness: 99.91, contamination: 0.69, size: 837510,  n50: 151931,gc: 0.46, contigs: 11,   gunc_pass: true,  gunc_level: "phylum",   damage: "modern",   taxonomy: "d__Bacteria;p__Patescibacteriota;c__Saccharimonadia;o__Saccharimonadales;g__JAQBRV01", file: "bin_77.fa.gz" },
+    ];
+
+    const ANI_DATA = [
+        { name: "NAY3300025461b7", ani: 98.73, label: "NAY...461b7" },
+        { name: "SOIL100000032",   ani: 98.54, label: "SOIL100000032" },
+        { name: "GCA054338395",    ani: 97.47, label: "GCA054338395" },
+        { name: "GCA054338475",    ani: 97.40, label: "GCA054338475" },
+        { name: "GCA963719035",    ani: 91.36, label: "GCA963719035" },
+        { name: "GCA036832295",    ani: 87.58, label: "GCA036832295" },
+        { name: "GCA003170935",    ani: 87.18, label: "GCA003170935" },
+    ];
+
+    // Full smiley data — T/(T+C) fractions per position from terminus (25 positions each end)
+    // Source: kapk_smiley_data.tsv — ancient/modern/ambiguous fractions
+    const SMILEY = {
+        anc5p: [0.653887,0.616406,0.571612,0.564485,0.549845,0.544892,0.547137,0.540871,0.536282,0.534734,0.530002,0.531450,0.535730,0.528932,0.531383,0.536309,0.532635,0.537265,0.537976,0.533046,0.536118,0.540495,0.537181,0.541530,0.545427],
+        anc3p: [0.659217,0.616229,0.568154,0.559619,0.543128,0.540037,0.539540,0.533712,0.530532,0.529456,0.523542,0.524589,0.530938,0.523078,0.526014,0.529095,0.524909,0.530705,0.531766,0.526304,0.530922,0.534493,0.529527,0.532808,0.538205],
+        mod5p: [0.502298,0.547133,0.519412,0.530149,0.524388,0.525474,0.530114,0.526232,0.518601,0.520680,0.517472,0.517257,0.518433,0.516752,0.515016,0.520018,0.520458,0.522535,0.522727,0.519157,0.519881,0.524183,0.522764,0.523760,0.527559],
+        mod3p: [0.506576,0.545718,0.511981,0.527398,0.515756,0.520849,0.523757,0.519730,0.515754,0.518610,0.510717,0.512363,0.516664,0.506583,0.509587,0.514951,0.509976,0.514707,0.518576,0.508707,0.514227,0.520095,0.512134,0.513020,0.520344],
+        amb5p: [0.507210,0.546454,0.517602,0.529782,0.525158,0.524723,0.532137,0.525391,0.524295,0.521753,0.515967,0.519284,0.520631,0.517766,0.517531,0.523718,0.520790,0.525538,0.525622,0.519402,0.523175,0.526823,0.520474,0.525691,0.531215],
+        amb3p: [0.507184,0.542730,0.511700,0.521934,0.514424,0.517533,0.525149,0.518888,0.515944,0.517413,0.511016,0.509732,0.518531,0.509490,0.510531,0.515693,0.513291,0.516567,0.520748,0.510401,0.515879,0.520074,0.514199,0.513980,0.522093],
+    };
+
+    // Fragment length data (5 bp bins, 30–195 bp)
+    const FRAG = {
+        bins: [32,37,42,47,52,57,62,67,72,77,82,87,92,97,102,107,112,117,122,127,132,137,142,147,152,157,162,167,172,177,182,187,192],
+        ancient: [774784,743857,653719,554769,498427,423708,349832,281832,201304,180332,152152,133497,117693,96498,69661,57281,49659,42672,28990,19345,15161,12273,7897,6074,5412,3615,2710,2308,1489,1177,897,591,191],
+        modern:  [125,186,254,245,370,532,789,1053,1312,1498,1472,1846,7399,21210,20452,17117,14065,16427,20832,16036,12569,12860,12985,10690,10061,10451,8689,8280,7551,6701,6069,5467,1891],
+        ambig:   [4315,4622,4358,4037,3469,4344,12836,40354,65708,58052,45239,36019,23323,9632,23664,23958,19733,11554,6809,9848,7615,3601,3211,3535,2210,1320,1601,1077,768,739,362,403,140],
+    };
+
+    // Per-bin smiley plot rates (ct_rate = C→T, ga_rate = G→A, positions 1–15 from terminus)
+    // Source: resolve/smiley_plot_rates.tsv
+    const BIN_SMILEY = {
+      "bin_3":  {ct:[0.4378,0.2626,0.1294,0.0863,0.0661,0.0544,0.0466,0.0407,0.0401,0.0362,0.0359,0.0357,0.0357,0.0363,0.0368], ga:[0.4401,0.2670,0.1286,0.0910,0.0660,0.0584,0.0482,0.0442,0.0415,0.0389,0.0372,0.0396,0.0375,0.0379,0.0371]},
+      "bin_4":  {ct:[0.3716,0.2175,0.0961,0.0649,0.0487,0.0389,0.0336,0.0307,0.0293,0.0289,0.0298,0.0303,0.0302,0.0306,0.0295], ga:[0.3754,0.2242,0.1013,0.0708,0.0547,0.0454,0.0402,0.0365,0.0354,0.0344,0.0347,0.0353,0.0347,0.0353,0.0341]},
+      "bin_6":  {ct:[0.0117,0.0141,0.0096,0.0092,0.0120,0.0117,0.0119,0.0111,0.0117,0.0111,0.0107,0.0121,0.0108,0.0112,0.0112], ga:[0.0126,0.0169,0.0114,0.0117,0.0137,0.0139,0.0146,0.0130,0.0138,0.0130,0.0128,0.0133,0.0119,0.0130,0.0126]},
+      "bin_8":  {ct:[0.0060,0.0074,0.0028,0.0030,0.0054,0.0053,0.0054,0.0048,0.0048,0.0050,0.0045,0.0049,0.0048,0.0047,0.0044], ga:[0.0088,0.0135,0.0052,0.0052,0.0103,0.0109,0.0094,0.0088,0.0096,0.0089,0.0081,0.0085,0.0080,0.0079,0.0083]},
+      "bin_10": {ct:[0.0095,0.0124,0.0078,0.0075,0.0128,0.0149,0.0137,0.0124,0.0151,0.0131,0.0122,0.0141,0.0125,0.0126,0.0131], ga:[0.0115,0.0149,0.0095,0.0097,0.0165,0.0183,0.0169,0.0150,0.0178,0.0160,0.0144,0.0166,0.0154,0.0148,0.0156]},
+      "bin_15": {ct:[0.0121,0.0115,0.0100,0.0115,0.0140,0.0141,0.0135,0.0112,0.0117,0.0119,0.0107,0.0116,0.0110,0.0105,0.0110], ga:[0.0136,0.0144,0.0125,0.0142,0.0186,0.0169,0.0153,0.0141,0.0145,0.0139,0.0132,0.0141,0.0133,0.0128,0.0132]},
+      "bin_16": {ct:[0.0078,0.0066,0.0038,0.0034,0.0039,0.0038,0.0040,0.0038,0.0036,0.0038,0.0036,0.0040,0.0035,0.0039,0.0036], ga:[0.0096,0.0141,0.0082,0.0068,0.0081,0.0079,0.0080,0.0076,0.0079,0.0071,0.0076,0.0075,0.0068,0.0073,0.0071]},
+      "bin_18": {ct:[0.0065,0.0085,0.0081,0.0078,0.0087,0.0084,0.0083,0.0078,0.0082,0.0083,0.0079,0.0086,0.0079,0.0081,0.0082], ga:[0.0077,0.0105,0.0109,0.0113,0.0119,0.0115,0.0115,0.0104,0.0109,0.0107,0.0102,0.0110,0.0105,0.0101,0.0101]},
+      "bin_19": {ct:[0.0083,0.0079,0.0058,0.0057,0.0059,0.0057,0.0064,0.0066,0.0065,0.0062,0.0063,0.0061,0.0059,0.0060,0.0058], ga:[0.0095,0.0105,0.0084,0.0075,0.0076,0.0078,0.0078,0.0080,0.0080,0.0073,0.0074,0.0072,0.0067,0.0074,0.0070]},
+      "bin_24": {ct:[0.0066,0.0045,0.0024,0.0021,0.0021,0.0017,0.0018,0.0015,0.0015,0.0018,0.0014,0.0019,0.0014,0.0015,0.0013], ga:[0.0075,0.0074,0.0040,0.0040,0.0039,0.0037,0.0034,0.0031,0.0031,0.0032,0.0029,0.0034,0.0027,0.0027,0.0027]},
+      "bin_26": {ct:[0.0086,0.0063,0.0038,0.0029,0.0044,0.0039,0.0035,0.0036,0.0032,0.0039,0.0032,0.0037,0.0030,0.0032,0.0036], ga:[0.0109,0.0113,0.0054,0.0043,0.0078,0.0075,0.0071,0.0062,0.0068,0.0067,0.0059,0.0070,0.0057,0.0055,0.0063]},
+      "bin_28": {ct:[0.0053,0.0043,0.0031,0.0024,0.0022,0.0021,0.0020,0.0019,0.0019,0.0020,0.0017,0.0021,0.0016,0.0018,0.0018], ga:[0.0064,0.0067,0.0060,0.0052,0.0041,0.0041,0.0033,0.0033,0.0035,0.0032,0.0029,0.0035,0.0028,0.0029,0.0035]},
+      "bin_31": {ct:[0.0145,0.0152,0.0096,0.0092,0.0104,0.0102,0.0109,0.0119,0.0112,0.0108,0.0110,0.0109,0.0110,0.0118,0.0104], ga:[0.0167,0.0178,0.0114,0.0110,0.0123,0.0128,0.0131,0.0131,0.0134,0.0131,0.0127,0.0133,0.0127,0.0133,0.0120]},
+      "bin_32": {ct:[0.0171,0.0134,0.0070,0.0053,0.0075,0.0067,0.0063,0.0057,0.0062,0.0069,0.0059,0.0072,0.0063,0.0064,0.0061], ga:[0.0188,0.0169,0.0092,0.0069,0.0110,0.0102,0.0105,0.0088,0.0090,0.0091,0.0077,0.0088,0.0088,0.0083,0.0087]},
+      "bin_35": {ct:[0.0087,0.0058,0.0031,0.0025,0.0035,0.0034,0.0032,0.0029,0.0032,0.0034,0.0030,0.0036,0.0031,0.0034,0.0032], ga:[0.0130,0.0091,0.0046,0.0042,0.0052,0.0060,0.0056,0.0051,0.0053,0.0055,0.0048,0.0052,0.0046,0.0049,0.0048]},
+      "bin_38": {ct:[0.0038,0.0031,0.0018,0.0017,0.0022,0.0018,0.0017,0.0015,0.0017,0.0020,0.0015,0.0023,0.0016,0.0019,0.0016], ga:[0.0065,0.0090,0.0033,0.0029,0.0056,0.0064,0.0050,0.0043,0.0054,0.0045,0.0042,0.0051,0.0041,0.0042,0.0046]},
+      "bin_42": {ct:[0.4519,0.2881,0.1379,0.0907,0.0602,0.0439,0.0350,0.0281,0.0245,0.0223,0.0208,0.0213,0.0211,0.0219,0.0223], ga:[0.4515,0.2936,0.1433,0.0938,0.0649,0.0479,0.0381,0.0308,0.0278,0.0249,0.0235,0.0238,0.0238,0.0251,0.0250]},
+      "bin_47": {ct:[0.0028,0.0023,0.0014,0.0015,0.0022,0.0019,0.0019,0.0017,0.0017,0.0021,0.0017,0.0024,0.0016,0.0017,0.0017], ga:[0.0058,0.0070,0.0041,0.0044,0.0068,0.0074,0.0066,0.0063,0.0067,0.0059,0.0058,0.0065,0.0056,0.0057,0.0055]},
+      "bin_53": {ct:[0.0046,0.0042,0.0030,0.0032,0.0035,0.0032,0.0036,0.0029,0.0031,0.0036,0.0030,0.0038,0.0030,0.0032,0.0030], ga:[0.0059,0.0060,0.0047,0.0047,0.0053,0.0050,0.0048,0.0047,0.0045,0.0048,0.0039,0.0048,0.0041,0.0041,0.0038]},
+      "bin_77": {ct:[0.0039,0.0025,0.0020,0.0015,0.0020,0.0018,0.0019,0.0017,0.0019,0.0021,0.0016,0.0023,0.0018,0.0019,0.0018], ga:[0.0057,0.0054,0.0036,0.0029,0.0046,0.0043,0.0041,0.0037,0.0042,0.0040,0.0034,0.0040,0.0033,0.0035,0.0035]},
+    };
+
+    // SNP tree Newick
+    const SNP_TREE = "(ancient_consensus:0.0146082492,s17_ancient_relative:0.1324813305,((SOIL100000032:0.1412148788,NAY3300025461b7:0.1370177070)100:0.1194106129,((GCA054338395:0.1325122782,GCA054338475:0.1858579661)84:0.1012578744,(GCA963719035:1.3287149145,(GCA036832295:0.2733498978,GCA003170935:0.0236534441)100:1.6798044070)100:0.9946355724)100:0.1658562535)100:0.1090011162);";
+
+    // ────────────────────────────────────────────────────────
+    // Mini smiley sparkline (inline SVG, 80×32px)
+    // ────────────────────────────────────────────────────────
+    function makeSmileySparkline(binName) {
+        const d = BIN_SMILEY[binName];
+        if (!d) return "";
+        const W = 80, H = 32;
+        const N = d.ct.length; // 15 positions
+        // Build full smiley: 5' reversed (pos15→pos1) + 3' forward (pos1→pos15)
+        const pts = [];
+        for (let i = 0; i < N; i++) pts.push(d.ct[N - 1 - i]);  // 5' end descending left→right
+        for (let i = 0; i < N; i++) pts.push(d.ga[i]);           // 3' end ascending left→right
+        const total = pts.length; // 30 points
+        const maxVal = Math.max(...pts, 0.05);
+        const yScale = v => H - 2 - ((v / Math.max(maxVal, 0.50)) * (H - 4));
+        const xScale = i => (i / (total - 1)) * W;
+        const polyline = pts.map((v, i) => `${xScale(i).toFixed(1)},${yScale(v).toFixed(1)}`).join(" ");
+        // Color by damage level
+        const ct1 = d.ct[0];
+        const color = ct1 > 0.25 ? "#8B1A1A" : ct1 > 0.05 ? "#c9915a" : "#8c867d";
+        return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">
+            <polyline points="${polyline}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>
+            <line x1="${W/2}" y1="0" x2="${W/2}" y2="${H}" stroke="#e5e3df" stroke-width="0.5"/>
+        </svg>`;
+    }
+
+    // ────────────────────────────────────────────────────────
+    // TABLE
+    // ────────────────────────────────────────────────────────
+    function getDomain(tax) {
+        if (tax.startsWith("d__Archaea")) return "Archaea";
+        return "Bacteria";
+    }
+
+    function getTaxShort(tax) {
+        const parts = tax.split(";");
+        // Find the deepest non-empty level
+        for (let i = parts.length - 1; i >= 0; i--) {
+            const p = parts[i].trim();
+            if (p && !p.endsWith("__")) return p;
+        }
+        return parts[0];
+    }
+
+    function isHQ(b) {
+        return b.completeness >= 90 && b.contamination < 5;
+    }
+
+    let sortCol = "bin";
+    let sortDir = 1;
+    let filterData = [...BINS];
+
+    function renderTable() {
+        const search = document.getElementById("table-search").value.toLowerCase();
+        const qual = document.getElementById("filter-quality").value;
+        const dmg = document.getElementById("filter-damage").value;
+        const dom = document.getElementById("filter-domain").value;
+
+        filterData = BINS.filter(b => {
+            if (search && !b.bin.includes(search) && !b.taxonomy.toLowerCase().includes(search)) return false;
+            if (qual === "HQ" && !isHQ(b)) return false;
+            if (qual === "MQ" && isHQ(b)) return false;
+            if (dmg && b.damage !== dmg) return false;
+            if (dom && getDomain(b.taxonomy) !== dom) return false;
+            return true;
+        });
+
+        filterData.sort((a, b) => {
+            let av = a[sortCol], bv = b[sortCol];
+            if (sortCol === "quality") { av = isHQ(a) ? 1 : 0; bv = isHQ(b) ? 1 : 0; }
+            if (typeof av === "string") return av.localeCompare(bv) * sortDir;
+            return (av - bv) * sortDir;
+        });
+
+        const tbody = document.getElementById("mags-tbody");
+        tbody.innerHTML = filterData.map(b => {
+            const hq = isHQ(b);
+            const dom = getDomain(b.taxonomy);
+            const taxShort = getTaxShort(b.taxonomy);
+            const contamClass = b.contamination < 2 ? "contam-low" : b.contamination < 5 ? "contam-mid" : "contam-high";
+            const sizeMbp = (b.size / 1e6).toFixed(2);
+            const n50k = b.n50 >= 1000 ? (b.n50/1000).toFixed(0)+"k" : b.n50;
+
+            return `<tr class="${b.focal ? 'focal' : ''}">
+                <td><span class="bin-name">${b.focal ? `<a href="#focal-section" class="bin-link">★ ${b.bin}</a>` : b.bin}</span></td>
+                <td>${hq ? '<span class="quality-hq">HQ</span>' : '<span class="quality-mq">MQ</span>'}</td>
+                <td class="taxonomy-cell" title="${b.taxonomy}">
+                    <span class="taxonomy-domain ${dom === 'Archaea' ? 'domain-archaea' : 'domain-bacteria'}">${dom === 'Archaea' ? 'Ar' : 'Ba'}</span>${taxShort}
+                </td>
+                <td>
+                    <div class="completeness-bar">
+                        <div class="bar-track"><div class="bar-fill" style="width:${b.completeness}%"></div></div>
+                        <div class="bar-value">${b.completeness.toFixed(1)}%</div>
+                    </div>
+                </td>
+                <td><span class="contam-value ${contamClass}">${b.contamination.toFixed(2)}%</span></td>
+                <td><span class="size-value">${sizeMbp} Mbp</span></td>
+                <td><span class="size-value">${n50k}</span></td>
+                <td><span class="size-value">${(b.gc * 100).toFixed(0)}%</span></td>
+                <td>${b.gunc_pass
+                    ? `<span class="badge-pass" title="${b.gunc_level}">✓ pass</span>`
+                    : `<span class="badge-fail" title="${b.gunc_level}">✗ fail</span>`}
+                </td>
+                <td>${b.damage === 'ancient'
+                    ? '<span class="badge-ancient">▲ ancient</span>'
+                    : b.damage === 'moderate'
+                    ? '<span class="badge-moderate">● moderate</span>'
+                    : '<span class="badge-modern">● modern</span>'}
+                </td>
+                <td style="line-height:0;" title="5′→[interior]→3′ damage profile">
+                    ${makeSmileySparkline(b.bin)}
+                </td>
+                <td>
+                    <a href="data/${b.file}" download class="download-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        .fa.gz
+                    </a>
+                </td>
+            </tr>`;
+        }).join("");
+    }
+
+    // Sort handlers
+    document.querySelectorAll(".mags-table th[data-col]").forEach(th => {
+        th.addEventListener("click", () => {
+            const col = th.dataset.col;
+            if (sortCol === col) sortDir *= -1;
+            else { sortCol = col; sortDir = -1; }
+            document.querySelectorAll(".mags-table th").forEach(h => h.classList.remove("sorted"));
+            th.classList.add("sorted");
+            renderTable();
+        });
+    });
+
+    ["table-search","filter-quality","filter-damage","filter-domain"].forEach(id => {
+        document.getElementById(id).addEventListener("input", renderTable);
+    });
+
+    renderTable();
+
+    // ────────────────────────────────────────────────────────
+    // FastANI chart
+    // ────────────────────────────────────────────────────────
+    function buildANIChart() {
+        const container = document.getElementById("ani-chart");
+        const minAni = 80;
+        const maxAni = 100;
+
+        ANI_DATA.forEach((d, i) => {
+            const pct = ((d.ani - minAni) / (maxAni - minAni)) * 100;
+            const isTop = d.ani >= 97;
+            const row = document.createElement("div");
+            row.className = "ani-row";
+            row.innerHTML = `
+                <div class="ani-label" title="${d.name}">${d.label}</div>
+                <div class="ani-bar-track">
+                    <div class="ani-bar-fill ${isTop ? 'top' : ''}" style="width:${pct}%"></div>
+                </div>
+                <div class="ani-value ${isTop ? 'top' : ''}">${d.ani.toFixed(2)}%</div>
+            `;
+            container.appendChild(row);
+        });
+
+        // Species boundary line
+        const boundary = document.createElement("div");
+        boundary.style.cssText = "margin-top:8px; padding-top:8px; border-top:1px dashed var(--border-default); font-size:0.72rem; color:var(--text-tertiary);";
+        boundary.textContent = "Species boundary at 95% ANI — all shown are conspecific";
+        container.appendChild(boundary);
+    }
+    buildANIChart();
+
+    // ────────────────────────────────────────────────────────
+    // Panel A — Smiley plot (paper style)
+    // ────────────────────────────────────────────────────────
+    function buildSmileyPlot() {
+        const container = document.getElementById("smiley-plot");
+        const W = container.offsetWidth || 300;
+        const H = 190;
+        const margin = { top: 8, right: 8, bottom: 32, left: 38 };
+        const iw = W - margin.left - margin.right;
+        const ih = H - margin.top - margin.bottom;
+        const N = 25; // positions per end
+
+        // Build x-axis: positions 25→1 (5' end, left), then 1→25 (3' end, right)
+        // x index 0..24 = 5' positions (pos 25 at left, pos 1 at center-left)
+        // x index 25..49 = 3' positions (pos 1 at center-right, pos 25 at right)
+        const totalX = N * 2;
+        const xScale = d3.scaleLinear().domain([0, totalX - 1]).range([0, iw]);
+        const yScale = d3.scaleLinear().domain([0.46, 0.70]).range([ih, 0]);
+
+        // Helper: build point array for smiley (5' reversed + 3' forward)
+        function smileySeries(arr5p, arr3p) {
+            const pts = [];
+            for (let i = 0; i < N; i++) pts.push({ x: i, y: arr5p[N - 1 - i] }); // 5' end: pos25→pos1
+            for (let i = 0; i < N; i++) pts.push({ x: N + i, y: arr3p[i] });       // 3' end: pos1→pos25
+            return pts;
+        }
+
+        const ancPts = smileySeries(SMILEY.anc5p, SMILEY.anc3p);
+        const modPts = smileySeries(SMILEY.mod5p, SMILEY.mod3p);
+        const ambPts = smileySeries(SMILEY.amb5p, SMILEY.amb3p);
+
+        const lineGen = d3.line().x(d => xScale(d.x)).y(d => yScale(d.y)).curve(d3.curveMonotoneX);
+        const areaGen = d3.area().x(d => xScale(d.x)).y0(ih).y1(d => yScale(d.y)).curve(d3.curveMonotoneX);
+
+        const svg = d3.select(container).append("svg")
+            .attr("viewBox", `0 0 ${W} ${H}`)
+            .attr("width", "100%").attr("height", H);
+        const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Horizontal grid lines
+        g.append("g").call(d3.axisLeft(yScale).ticks(5).tickSize(-iw).tickFormat(""))
+            .selectAll("line").style("stroke","var(--border-subtle)").style("stroke-dasharray","2,2");
+        g.select(".domain").remove();
+
+        // Center divider (boundary between 5' and 3' ends)
+        g.append("line")
+            .attr("x1", xScale(N - 0.5)).attr("x2", xScale(N - 0.5))
+            .attr("y1", 0).attr("y2", ih)
+            .attr("stroke","var(--border-default)").attr("stroke-dasharray","4,2");
+
+        // Ambiguous area + line
+        g.append("path").datum(ambPts).attr("fill","rgba(140,140,140,0.08)").attr("d", areaGen);
+        g.append("path").datum(ambPts).attr("fill","none").attr("stroke","#aaa").attr("stroke-width",1).attr("d", lineGen);
+
+        // Modern area + line
+        g.append("path").datum(modPts).attr("fill","rgba(74,142,212,0.08)").attr("d", areaGen);
+        g.append("path").datum(modPts).attr("fill","none").attr("stroke","#4a8ed4").attr("stroke-width",1.5).attr("d", lineGen);
+
+        // Ancient area + line (on top)
+        g.append("path").datum(ancPts).attr("fill","rgba(139,26,26,0.1)").attr("d", areaGen);
+        g.append("path").datum(ancPts).attr("fill","none").attr("stroke","#8B1A1A").attr("stroke-width",2).attr("d", lineGen);
+
+        // Data points for ancient (dots)
+        g.selectAll(".anc-dot").data(ancPts.filter((_,i)=>i%3===0))
+            .join("circle").attr("class","anc-dot")
+            .attr("cx", d => xScale(d.x)).attr("cy", d => yScale(d.y))
+            .attr("r", 2.5).attr("fill","#8B1A1A");
+
+        // X axis — show 5' label left, 3' label right, position numbers
+        const xAxisG = g.append("g").attr("transform",`translate(0,${ih})`);
+        // Tick marks at 5' positions 1,5,10,15,20,25 and 3' mirror
+        const tickPositions5p = [0,4,9,14,19,24]; // indices (= pos 25,21,16,11,6,1 from 5' end)
+        const tickPositions3p = tickPositions5p.map(t => N + (N-1-t)); // mirror
+
+        const allTicks = [...tickPositions5p, ...tickPositions3p];
+        const tickLabels = tickPositions5p.map(t => N - t) // 25,21,16,11,6,1
+            .concat(tickPositions5p.map(t => N - t).reverse()); // 1,6,11,16,21,25
+
+        xAxisG.append("line").attr("x1",0).attr("x2",iw).attr("y1",0).attr("y2",0).attr("stroke","var(--border-subtle)");
+        allTicks.forEach((xi, i) => {
+            xAxisG.append("line").attr("x1",xScale(xi)).attr("x2",xScale(xi)).attr("y1",0).attr("y2",4).attr("stroke","var(--border-default)");
+            xAxisG.append("text").attr("x",xScale(xi)).attr("y",13)
+                .attr("text-anchor","middle").attr("font-size","8px").attr("fill","var(--text-tertiary)")
+                .attr("font-family","var(--font-mono)").text(tickLabels[i]);
+        });
+
+        // End labels
+        xAxisG.append("text").attr("x", xScale(0)).attr("y", 24).attr("text-anchor","middle")
+            .attr("font-size","8px").attr("fill","var(--text-tertiary)").text("5′");
+        xAxisG.append("text").attr("x", xScale(N*2-1)).attr("y", 24).attr("text-anchor","middle")
+            .attr("font-size","8px").attr("fill","var(--text-tertiary)").text("3′");
+        xAxisG.append("text").attr("x", iw/2).attr("y", 28).attr("text-anchor","middle")
+            .attr("font-size","7px").attr("fill","var(--text-tertiary)").text("Position from read terminus");
+
+        // Y axis
+        g.append("g").call(d3.axisLeft(yScale).ticks(5).tickFormat(d => `${(d*100).toFixed(0)}%`))
+            .selectAll("text").style("font-size","8px").style("fill","var(--text-tertiary)");
+        g.select(".domain").style("stroke","var(--border-subtle)");
+    }
+    buildSmileyPlot();
+
+    // ────────────────────────────────────────────────────────
+    // Panel B — Fragment length histogram
+    // ────────────────────────────────────────────────────────
+    function buildFragPlot() {
+        const container = document.getElementById("frag-plot");
+        const W = container.offsetWidth || 300;
+        const H = 190;
+        const margin = { top: 8, right: 8, bottom: 32, left: 38 };
+        const iw = W - margin.left - margin.right;
+        const ih = H - margin.top - margin.bottom;
+
+        const maxAnc = d3.max(FRAG.ancient);
+        const maxMod = d3.max(FRAG.modern) * 4; // scale modern to be visible alongside ancient
+        const yMax = maxAnc * 1.05;
+
+        const xScale = d3.scaleLinear().domain([30, 195]).range([0, iw]);
+        const yScaleAnc = d3.scaleLinear().domain([0, yMax]).range([ih, 0]);
+        // Modern on right y-axis (scaled up for visibility)
+        const modMax = d3.max(FRAG.modern);
+        const yScaleMod = d3.scaleLinear().domain([0, modMax]).range([ih, 0]);
+
+        const barW = xScale(35) - xScale(30) - 1;
+
+        const svg = d3.select(container).append("svg")
+            .attr("viewBox", `0 0 ${W} ${H}`)
+            .attr("width","100%").attr("height",H);
+        const g = svg.append("g").attr("transform",`translate(${margin.left},${margin.top})`);
+
+        // Grid
+        g.append("g").call(d3.axisLeft(yScaleAnc).ticks(4).tickSize(-iw).tickFormat(""))
+            .selectAll("line").style("stroke","var(--border-subtle)").style("stroke-dasharray","2,2");
+        g.select(".domain").remove();
+
+        // Ambiguous bars (background)
+        g.selectAll(".bar-amb").data(FRAG.bins)
+            .join("rect").attr("class","bar-amb")
+            .attr("x", d => xScale(d - 2.5))
+            .attr("y", (d,i) => yScaleAnc(FRAG.ambig[i]))
+            .attr("width", barW)
+            .attr("height", (d,i) => ih - yScaleAnc(FRAG.ambig[i]))
+            .attr("fill","rgba(160,160,160,0.25)");
+
+        // Ancient bars
+        g.selectAll(".bar-anc").data(FRAG.bins)
+            .join("rect").attr("class","bar-anc")
+            .attr("x", d => xScale(d - 2.5))
+            .attr("y", (d,i) => yScaleAnc(FRAG.ancient[i]))
+            .attr("width", barW)
+            .attr("height", (d,i) => ih - yScaleAnc(FRAG.ancient[i]))
+            .attr("fill","rgba(139,26,26,0.65)");
+
+        // Modern line (separate scale, overlaid)
+        const modLine = d3.line()
+            .x((d,i) => xScale(FRAG.bins[i]))
+            .y((d) => yScaleMod(d))
+            .curve(d3.curveMonotoneX);
+        g.append("path").datum(FRAG.modern)
+            .attr("fill","rgba(42,122,90,0.15)")
+            .attr("d", d3.area()
+                .x((d,i) => xScale(FRAG.bins[i]))
+                .y0(ih).y1(d => yScaleMod(d))
+                .curve(d3.curveMonotoneX));
+        g.append("path").datum(FRAG.modern)
+            .attr("fill","none").attr("stroke","#2a7a5a").attr("stroke-width",1.5)
+            .attr("d", modLine);
+
+        // Dashed vertical lines at means
+        [61, 129].forEach((mean, i) => {
+            g.append("line")
+                .attr("x1", xScale(mean)).attr("x2", xScale(mean))
+                .attr("y1", 0).attr("y2", ih)
+                .attr("stroke", i === 0 ? "#8B1A1A" : "#2a7a5a")
+                .attr("stroke-dasharray","3,2").attr("stroke-width",1);
+        });
+
+        // X axis
+        const xAxis = g.append("g").attr("transform",`translate(0,${ih})`);
+        xAxis.call(d3.axisBottom(xScale).ticks(6).tickFormat(d => d))
+            .selectAll("text").style("font-size","8px").style("fill","var(--text-tertiary)");
+        xAxis.select(".domain").style("stroke","var(--border-subtle)");
+        g.append("text").attr("x", iw/2).attr("y", ih+30).attr("text-anchor","middle")
+            .attr("font-size","8px").attr("fill","var(--text-tertiary)").text("Fragment length (bp)");
+
+        // Y axis (ancient, left)
+        g.append("g").call(d3.axisLeft(yScaleAnc).ticks(4).tickFormat(d => d >= 1e6 ? `${(d/1e6).toFixed(1)}M` : d >= 1e3 ? `${(d/1e3).toFixed(0)}k` : d))
+            .selectAll("text").style("font-size","8px").style("fill","var(--text-tertiary)");
+    }
+    buildFragPlot();
+
+    // ────────────────────────────────────────────────────────
+    // SNP tree (Newick → D3 dendrogram)
+    // ────────────────────────────────────────────────────────
+    function parseNewick(s) {
+        const ancestors = [];
+        let tree = {};
+        let tokens = s.split(/\s*(;|\(|\)|,|:)\s*/);
+        let subtree = tree;
+        for (let i = 0; i < tokens.length; i++) {
+            const token = tokens[i];
+            if (token === "(") {
+                subtree.branchset = [];
+                ancestors.push(subtree);
+                subtree = {};
+                ancestors[ancestors.length-1].branchset.push(subtree);
+            } else if (token === ",") {
+                subtree = {};
+                ancestors[ancestors.length-1].branchset.push(subtree);
+            } else if (token === ")") {
+                subtree = ancestors.pop();
+            } else if (token === ":") {
+                // next token is length
+            } else if (token !== ";" && token !== "") {
+                if (tokens[i-1] === ":") {
+                    subtree.length = parseFloat(token);
+                } else if (subtree.name !== undefined) {
+                    // support value
+                    subtree.support = token;
+                } else {
+                    subtree.name = token;
+                }
+            }
+        }
+        return tree;
+    }
+
+    function buildTree() {
+        const container = document.getElementById("snp-tree");
+        const W = container.offsetWidth || 360;
+        const H = 290;
+        const margin = { top: 14, right: 120, bottom: 24, left: 14 };
+        const iw = W - margin.left - margin.right;
+        const ih = H - margin.top - margin.bottom;
+
+        const root = d3.hierarchy(parseNewick(SNP_TREE), d => d.branchset);
+
+        function setDepth(node, depth) {
+            node.accLen = depth + (node.data.length || 0);
+            if (node.children) node.children.forEach(c => setDepth(c, node.accLen));
+        }
+        setDepth(root, 0);
+
+        // Place leaves on y axis evenly
+        const leaves = root.leaves();
+        leaves.forEach((l, i) => { l.yPos = (i / (leaves.length - 1)) * ih; });
+
+        // Propagate y positions up (mean of children)
+        function setYInner(node) {
+            if (!node.children) return;
+            node.children.forEach(setYInner);
+            node.yPos = d3.mean(node.children, c => c.yPos);
+        }
+        setYInner(root);
+
+        const xMax = Math.min(d3.max(root.descendants(), d => d.accLen), 3.2);
+        const xScale = d3.scaleLinear().domain([0, xMax]).range([0, iw]);
+
+        const svg = d3.select(container).append("svg")
+            .attr("viewBox", `0 0 ${W} ${H}`)
+            .attr("width","100%").attr("height",H);
+        const g = svg.append("g").attr("transform",`translate(${margin.left},${margin.top})`);
+
+        function gx(n) { return xScale(Math.min(n.accLen, xMax)); }
+        function gy(n) { return n.yPos; }
+
+        // Links (rectangular elbow: vertical then horizontal)
+        g.selectAll(".tree-link")
+            .data(root.descendants().filter(d => d.parent))
+            .join("path").attr("class","tree-link")
+            .attr("d", d => `M${gx(d)},${gy(d)} H${gx(d.parent)} V${gy(d.parent)}`);
+
+        const labelMap = {
+            "ancient_consensus":   "KapK ancient (~2 Ma)",
+            "s17_ancient_relative":"S17 (incubation)",
+            "SOIL100000032":       "SOIL100000032",
+            "NAY3300025461b7":     "NAY3300025461b7",
+            "GCA054338395":        "GCA054338395",
+            "GCA054338475":        "GCA054338475",
+            "GCA963719035":        "GCA963719035",
+            "GCA036832295":        "GCA036832295",
+            "GCA003170935":        "GCA003170935",
+        };
+
+        // Leaf nodes — use squares like paper figure
+        root.leaves().forEach(d => {
+            const name = d.data.name || "";
+            const x = gx(d), y = gy(d);
+            const isFocal = name === "ancient_consensus";
+            const isS17   = name === "s17_ancient_relative";
+            const sz = 6;
+
+            if (isFocal) {
+                // Filled dark red square (like paper)
+                g.append("rect")
+                    .attr("x", x - sz/2).attr("y", y - sz/2)
+                    .attr("width", sz).attr("height", sz)
+                    .attr("fill","#8B1A1A");
+            } else if (isS17) {
+                // Open square
+                g.append("rect")
+                    .attr("x", x - sz/2).attr("y", y - sz/2)
+                    .attr("width", sz).attr("height", sz)
+                    .attr("fill","none").attr("stroke","#555").attr("stroke-width",1.5);
+            } else {
+                // Small open circle for refs
+                g.append("circle").attr("cx", x).attr("cy", y).attr("r", 3)
+                    .attr("fill","none").attr("stroke","#888").attr("stroke-width",1);
+            }
+
+            g.append("text")
+                .attr("x", x + 8).attr("y", y).attr("dy","0.32em")
+                .attr("font-size", isFocal ? "10px" : "9px")
+                .attr("font-weight", isFocal ? "700" : "400")
+                .attr("fill", isFocal ? "#8B1A1A" : isS17 ? "#555" : "var(--text-secondary)")
+                .attr("font-family","var(--font-mono)")
+                .text(labelMap[name] || name);
+        });
+
+        // Scale bar
+        const barLen = xScale(0.5);
+        g.append("line").attr("x1",0).attr("x2",barLen).attr("y1",ih+12).attr("y2",ih+12)
+            .attr("stroke","var(--text-tertiary)").attr("stroke-width",1);
+        g.append("line").attr("x1",0).attr("x2",0).attr("y1",ih+9).attr("y2",ih+15)
+            .attr("stroke","var(--text-tertiary)").attr("stroke-width",1);
+        g.append("line").attr("x1",barLen).attr("x2",barLen).attr("y1",ih+9).attr("y2",ih+15)
+            .attr("stroke","var(--text-tertiary)").attr("stroke-width",1);
+        g.append("text").attr("x",barLen/2).attr("y",ih+22).attr("text-anchor","middle")
+            .attr("font-size","8px").attr("fill","var(--text-tertiary)")
+            .attr("font-family","var(--font-mono)").text("0.5 Tv/site");
+    }
+    buildTree();
+    </script>
+</body>
+</html>
