@@ -980,7 +980,7 @@
 
                     <!-- Panel C: SNP tree -->
                     <div style="padding:var(--space-lg);">
-                        <div style="font-size:0.72rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:var(--space-sm);">C &nbsp;·&nbsp; SNP tree (Tv-only · 9 taxa)</div>
+                        <div style="font-size:0.72rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:var(--space-sm);">C &nbsp;·&nbsp; Codon ML tree · 7 focal taxa · 79-taxon IQ-TREE</div>
                         <div class="tree-container" id="snp-tree"></div>
                         <div class="legend" style="margin-top:var(--space-sm);">
                             <div class="legend-item">
@@ -1185,8 +1185,9 @@
       "bin_77": {ct:[0.0039,0.0025,0.0020,0.0015,0.0020,0.0018,0.0019,0.0017,0.0019,0.0021,0.0016,0.0023,0.0018,0.0019,0.0018], ga:[0.0057,0.0054,0.0036,0.0029,0.0046,0.0043,0.0041,0.0037,0.0042,0.0040,0.0034,0.0040,0.0033,0.0035,0.0035]},
     };
 
-    // SNP tree Newick
-    const SNP_TREE = "(ancient_consensus:0.0146082492,s17_ancient_relative:0.1324813305,((SOIL100000032:0.1412148788,NAY3300025461b7:0.1370177070)100:0.1194106129,((GCA054338395:0.1325122782,GCA054338475:0.1858579661)84:0.1012578744,(GCA963719035:1.3287149145,(GCA036832295:0.2733498978,GCA003170935:0.0236534441)100:1.6798044070)100:0.9946355724)100:0.1658562535)100:0.1090011162);";
+    // Codon ML focal subtree (7 taxa pruned from 79-taxon IQ-TREE codon12 tree)
+    // Same tree used in paper Figure 7C — branch lengths in codon substitutions/site
+    const SNP_TREE = "((((GCA054338395:0.03780,GCA054338475:0.00061)95.2/100:0.00167,(SOIL100000032:0.04342,(ancient_consensus:0.00000,s17_ancient_relative:0.00340)94.9/99:0.00134)86.1/100:0.00100)98.6/100:0.04549,NAY3300025461b7:0.00083)100/97:0.00997,GCA963719035:0.02912)100/100:1.40392;";
 
     // ────────────────────────────────────────────────────────
     // Mini smiley sparkline (inline SVG, 80×32px)
@@ -1632,14 +1633,12 @@
 
         const labelMap = {
             "ancient_consensus":   "KapK ancient (~2 Ma)",
-            "s17_ancient_relative":"S17 (incubation)",
+            "s17_ancient_relative":"S17 (incubation exp.)",
             "SOIL100000032":       "SOIL100000032",
             "NAY3300025461b7":     "NAY3300025461b7",
             "GCA054338395":        "GCA054338395",
             "GCA054338475":        "GCA054338475",
             "GCA963719035":        "GCA963719035",
-            "GCA036832295":        "GCA036832295",
-            "GCA003170935":        "GCA003170935",
         };
 
         // Leaf nodes — use squares like paper figure
@@ -1678,7 +1677,7 @@
         });
 
         // Scale bar
-        const barLen = xScale(0.5);
+        const barLen = xScale(0.05);
         g.append("line").attr("x1",0).attr("x2",barLen).attr("y1",ih+12).attr("y2",ih+12)
             .attr("stroke","var(--text-tertiary)").attr("stroke-width",1);
         g.append("line").attr("x1",0).attr("x2",0).attr("y1",ih+9).attr("y2",ih+15)
@@ -1687,7 +1686,7 @@
             .attr("stroke","var(--text-tertiary)").attr("stroke-width",1);
         g.append("text").attr("x",barLen/2).attr("y",ih+22).attr("text-anchor","middle")
             .attr("font-size","8px").attr("fill","var(--text-tertiary)")
-            .attr("font-family","var(--font-mono)").text("0.5 Tv/site");
+            .attr("font-family","var(--font-mono)").text("0.05 sub/site");
     }
     buildTree();
     </script>
