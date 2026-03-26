@@ -875,7 +875,7 @@
                         <div class="focal-taxonomy">d__Archaea · p__Halobacteriota · c__Bog-38 · o__Bog-38</div>
                         <div class="focal-stasis-badge">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                            Evolutionary stasis confirmed — only 2 SNPs over 2 million years
+                            Evolutionary stasis — 942 non-damage SNPs over ~2 million years · 99.94% ANI
                         </div>
                     </div>
                 </div>
@@ -945,7 +945,7 @@
                     Evolutionary stasis — key evidence
                 </div>
                 <div class="stasis-callout-body">
-                    Codon alignment of 38 archaeal marker genes (78 taxa, 4,406 nt) shows <strong>only 2 SNPs</strong> between the ancient (~2 Ma) and modern Kap København Methanoflorentales. Neither substitution is a damage-type (C→T or G→A). The ancient genome is within the species boundary (&gt;95% ANI) with extant permafrost relatives and shares &gt;98.5% ANI with the closest references. Molecular dating (BEAST2 codon tip-dating) estimates the ancient–modern MRCA at 2.01 Ma, with a divergence clock rate of 1.13 × 10⁻⁸ substitutions/site/year.
+                    The KapK ancient consensus (2 Ma) differs from the co-extracted modern fraction by only <strong>942 non-damage SNPs</strong> (99.94% ANI), and from the S17 living analogue by 2,579 non-damage SNPs (99.42% ANI). The ancient genome falls within the species boundary (&gt;95% ANI) with all extant Methanoflorentales and shares &gt;98% ANI with the closest references (NAY3300025461b7, SOIL100000032). Molecular dating (BEAST2 codon tip-dating) estimates a clock rate of 1.13 × 10⁻⁸ substitutions/site/year and places the ancient–modern MRCA at ~2.01 Ma.
                 </div>
             </div>
 
@@ -962,9 +962,9 @@
                         <div style="font-size:0.72rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:var(--space-sm);">A &nbsp;·&nbsp; Damage profile (smiley)</div>
                         <div id="smiley-plot"></div>
                         <div class="legend" style="margin-top:var(--space-sm);">
-                            <div class="legend-item"><div class="legend-dot" style="background:#8B1A1A"></div>Ancient</div>
-                            <div class="legend-item"><div class="legend-dot" style="background:#4a8ed4"></div>Modern</div>
-                            <div class="legend-item"><div class="legend-dot" style="background:#888"></div>Ambiguous</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#A63820"></div>KapK-anc</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#6B9AB8"></div>KapK-dec</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#6B8C6E"></div>KapK-mod</div>
                         </div>
                     </div>
 
@@ -973,8 +973,9 @@
                         <div style="font-size:0.72rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:var(--space-sm);">B &nbsp;·&nbsp; Fragment length distribution</div>
                         <div id="frag-plot"></div>
                         <div class="legend" style="margin-top:var(--space-sm);">
-                            <div class="legend-item"><div class="legend-dot" style="background:#8B1A1A"></div>Ancient (μ=61 bp)</div>
-                            <div class="legend-item"><div class="legend-dot" style="background:#2a7a5a"></div>Modern (μ=129 bp)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#A63820"></div>KapK-anc (5.5M)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#6B9AB8"></div>KapK-dec (257k)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#6B8C6E"></div>KapK-mod (1.4M)</div>
                         </div>
                     </div>
 
@@ -1009,37 +1010,31 @@
                             <thead>
                                 <tr>
                                     <th>Comparison</th>
-                                    <th>Raw SNPs</th>
+                                    <th>Total SNPs</th>
                                     <th>Damage-type</th>
-                                    <th>Tv-only</th>
+                                    <th>Non-damage</th>
+                                    <th>ANI</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr class="highlight-row">
-                                    <td>ancient vs KapK modern</td>
+                                    <td>KapK-anc vs KapK-dec</td>
                                     <td>1,192</td>
                                     <td><div class="snp-pct-bar"><div class="snp-mini-track"><div class="snp-mini-fill" style="width:21%"></div></div>250 (21%)</div></td>
                                     <td>942</td>
+                                    <td>99.94%</td>
                                 </tr>
                                 <tr>
-                                    <td>ancient vs S17 modern</td>
+                                    <td>KapK-anc vs KapK-mod (S17)</td>
                                     <td>9,401</td>
                                     <td><div class="snp-pct-bar"><div class="snp-mini-track"><div class="snp-mini-fill" style="width:73%"></div></div>6,822 (73%)</div></td>
-                                    <td>1,512</td>
-                                </tr>
-                                <tr>
-                                    <td>ancient vs NAY3300025461b7</td>
-                                    <td>8,233</td><td>—</td><td>—</td>
-                                </tr>
-                                <tr>
-                                    <td>ancient vs SOIL100000032</td>
-                                    <td>10,363</td><td>—</td><td>—</td>
+                                    <td>2,579</td>
+                                    <td>99.42%</td>
                                 </tr>
                             </tbody>
                         </table>
                         <div style="margin-top:var(--space-md); padding-top:var(--space-md); border-top:1px solid var(--border-subtle); font-size:0.82rem; color:var(--text-secondary); line-height:1.6;">
-                            Codon alignment (38 markers, 78 taxa, 4,406 nt):<br>
-                            <strong style="color:var(--status-damaged);">2 SNPs</strong> ancient vs KapK modern (0.03%) — both transversions, zero damage-type.
+                            Source: <code style="font-size:0.78rem;">focal_pairwise_snp_counts.tsv</code> · nucmer alignment vs ancient_consensus · Tv-only = 942 / 1,512
                         </div>
                     </div>
                 </div>
@@ -1141,24 +1136,42 @@
         { name: "GCA003170935",    ani: 87.18, label: "GCA003170935" },
     ];
 
-    // Full smiley data — T/(T+C) fractions per position from terminus (25 positions each end)
-    // Source: kapk_smiley_data.tsv — ancient/modern/ambiguous fractions
-    const SMILEY = {
-        anc5p: [0.653887,0.616406,0.571612,0.564485,0.549845,0.544892,0.547137,0.540871,0.536282,0.534734,0.530002,0.531450,0.535730,0.528932,0.531383,0.536309,0.532635,0.537265,0.537976,0.533046,0.536118,0.540495,0.537181,0.541530,0.545427],
-        anc3p: [0.659217,0.616229,0.568154,0.559619,0.543128,0.540037,0.539540,0.533712,0.530532,0.529456,0.523542,0.524589,0.530938,0.523078,0.526014,0.529095,0.524909,0.530705,0.531766,0.526304,0.530922,0.534493,0.529527,0.532808,0.538205],
-        mod5p: [0.502298,0.547133,0.519412,0.530149,0.524388,0.525474,0.530114,0.526232,0.518601,0.520680,0.517472,0.517257,0.518433,0.516752,0.515016,0.520018,0.520458,0.522535,0.522727,0.519157,0.519881,0.524183,0.522764,0.523760,0.527559],
-        mod3p: [0.506576,0.545718,0.511981,0.527398,0.515756,0.520849,0.523757,0.519730,0.515754,0.518610,0.510717,0.512363,0.516664,0.506583,0.509587,0.514951,0.509976,0.514707,0.518576,0.508707,0.514227,0.520095,0.512134,0.513020,0.520344],
-        amb5p: [0.507210,0.546454,0.517602,0.529782,0.525158,0.524723,0.532137,0.525391,0.524295,0.521753,0.515967,0.519284,0.520631,0.517766,0.517531,0.523718,0.520790,0.525538,0.525622,0.519402,0.523175,0.526823,0.520474,0.525691,0.531215],
-        amb3p: [0.507184,0.542730,0.511700,0.521934,0.514424,0.517533,0.525149,0.518888,0.515944,0.517413,0.511016,0.509732,0.518531,0.509490,0.510531,0.515693,0.513291,0.516567,0.520748,0.510401,0.515879,0.520074,0.514199,0.513980,0.522093],
+    // ── Fig7 exact data ──────────────────────────────────────────────────────────
+    // Panel A: fitted misincorporation rates from deconvolve/damage_model.tsv
+    // (positions 1–15, KapK-anc = fitted model, KapK-dec / S17 = scaled excess)
+    // Colors match paper: #A63820 / #6B9AB8 / #6B8C6E
+    const COL_ANCIENT  = "#A63820";
+    const COL_MODERN   = "#6B9AB8";
+    const COL_RELATIVE = "#6B8C6E";
+
+    // KapK-anc: fitted C→T (5') and G→A (3') with 95% CI
+    const DMG = {
+        ct_rate:  [0.3571,0.2093,0.0913,0.0615,0.0463,0.0376,0.0324,0.0293,0.0276,0.0272,0.0281,0.0286,0.0283,0.0290,0.0277],
+        ct_lo:    [0.3565,0.2087,0.0908,0.0612,0.0460,0.0373,0.0321,0.0291,0.0274,0.0270,0.0279,0.0284,0.0280,0.0287,0.0275],
+        ct_hi:    [0.3577,0.2100,0.0917,0.0619,0.0467,0.0379,0.0327,0.0296,0.0279,0.0275,0.0284,0.0289,0.0285,0.0292,0.0280],
+        ga_rate:  [0.3721,0.2203,0.0967,0.0653,0.0485,0.0385,0.0337,0.0305,0.0294,0.0284,0.0294,0.0295,0.0294,0.0298,0.0285],
+        ga_lo:    [0.3715,0.2196,0.0962,0.0649,0.0482,0.0382,0.0334,0.0303,0.0291,0.0282,0.0292,0.0292,0.0291,0.0295,0.0282],
+        ga_hi:    [0.3728,0.2210,0.0972,0.0656,0.0489,0.0388,0.0340,0.0308,0.0296,0.0287,0.0297,0.0297,0.0296,0.0301,0.0288],
     };
 
-    // Fragment length data (5 bp bins, 30–195 bp)
-    const FRAG = {
-        bins: [32,37,42,47,52,57,62,67,72,77,82,87,92,97,102,107,112,117,122,127,132,137,142,147,152,157,162,167,172,177,182,187,192],
-        ancient: [774784,743857,653719,554769,498427,423708,349832,281832,201304,180332,152152,133497,117693,96498,69661,57281,49659,42672,28990,19345,15161,12273,7897,6074,5412,3615,2710,2308,1489,1177,897,591,191],
-        modern:  [125,186,254,245,370,532,789,1053,1312,1498,1472,1846,7399,21210,20452,17117,14065,16427,20832,16036,12569,12860,12985,10690,10061,10451,8689,8280,7551,6701,6069,5467,1891],
-        ambig:   [4315,4622,4358,4037,3469,4344,12836,40354,65708,58052,45239,36019,23323,9632,23664,23958,19733,11554,6809,9848,7615,3601,3211,3535,2210,1320,1601,1077,768,739,362,403,140],
+    // KapK-dec (KapK modern fraction) — scaled excess rates
+    const DEC = {
+        ct: [0,0.08655,0.00531,0.03677,0.01989,0.02307,0.03667,0.02529,0.00293,0.00902,0,0,0.00244,0,0],
+        ga: [0,0.09319,0,0.04192,0.00934,0.02359,0.03173,0.02046,0.00933,0.01732,0,0,0.01188,0,0],
     };
+
+    // S17 (KapK-mod in paper = S17 living analogue) — scaled excess rates
+    const S17 = {
+        ct: [0.03693,0.05530,0,0,0.01451,0.01161,0.00726,0.00894,0,0,0,0.00065,0.00012,0,0.01225],
+        ga: [0.00192,0.01788,0.00308,0,0.01611,0.01104,0.01329,0,0.00754,0.00750,0,0,0.00327,0.00831,0],
+    };
+
+    // Panel B: fragment length frequencies (%) — normalized read counts
+    // KapK-anc (5.5M), KapK-dec (257k modern), KapK-mod (S17 1.4M)
+    const FRAG_LENS = [27,32,37,42,47,52,57,62,67,72,77,82,87,92,97,102,107,112,117,122,127,132,137,142,147,152,157,162,167,172,177,182,187,192,197,202,207,212,217,222,227,232,237,242,247];
+    const FRAG_ANC  = [0,14.1131,13.5498,11.9079,10.1054,9.0791,7.7181,6.3724,5.1337,3.6669,3.2849,2.7715,2.4317,2.1438,1.7578,1.2689,1.0434,0.9046,0.7773,0.5281,0.3524,0.2762,0.2236,0.1438,0.1106,0.0986,0.0658,0.0494,0.0420,0.0271,0.0214,0.0163,0.0108,0.0035,0,0,0,0,0,0,0,0,0,0,0];
+    const FRAG_DEC  = [0,0.0485,0.0722,0.0986,0.0952,0.1437,0.2066,0.3064,0.4090,0.5095,0.5818,0.5717,0.7169,2.8736,8.2374,7.9430,6.6478,5.4625,6.3798,8.0906,6.2280,4.8815,4.9945,5.0430,4.1517,3.9074,4.0589,3.3746,3.2157,2.9326,2.6025,2.3570,2.1232,0.7344,0,0,0,0,0,0,0,0,0,0,0];
+    const FRAG_S17  = [0,0.0001,0.0854,0.0674,0.0516,0.2185,0.2576,0.4320,0.5578,0.7896,0.9399,1.2272,1.3824,1.5648,1.8599,2.4539,2.6340,2.7543,2.9042,2.9730,2.9362,2.8455,2.8098,2.8390,2.7290,2.7154,2.6329,2.4363,2.3236,2.3085,2.1078,2.0317,2.0555,1.9388,1.8918,1.7491,1.6759,1.6546,1.7001,1.4892,1.5796,1.4045,1.2466,1.1436,1.2737];
 
     // Per-bin smiley plot rates (ct_rate = C→T, ga_rate = G→A, positions 1–15 from terminus)
     // Source: resolve/smiley_plot_rates.tsv
@@ -1361,192 +1374,153 @@
     buildANIChart();
 
     // ────────────────────────────────────────────────────────
-    // Panel A — Smiley plot (paper style)
+    // Panel A — Smiley plot (exact paper Fig 7A)
+    // Fitted rates with CI for KapK-anc; scaled excess for KapK-dec / S17
+    // X: pos=1 at outer edges (xpos=±15), pos=15 near centre (xpos=±1)
     // ────────────────────────────────────────────────────────
     function buildSmileyPlot() {
         const container = document.getElementById("smiley-plot");
         const W = container.offsetWidth || 300;
-        const H = 190;
-        const margin = { top: 8, right: 8, bottom: 32, left: 38 };
+        const H = 200;
+        const margin = { top: 10, right: 8, bottom: 36, left: 44 };
         const iw = W - margin.left - margin.right;
         const ih = H - margin.top - margin.bottom;
-        const N = 25; // positions per end
+        const N = 15; // positions per end
 
-        // Build x-axis: positions 25→1 (5' end, left), then 1→25 (3' end, right)
-        // x index 0..24 = 5' positions (pos 25 at left, pos 1 at center-left)
-        // x index 25..49 = 3' positions (pos 1 at center-right, pos 25 at right)
-        const totalX = N * 2;
-        const xScale = d3.scaleLinear().domain([0, totalX - 1]).range([0, iw]);
-        const yScale = d3.scaleLinear().domain([0.46, 0.70]).range([ih, 0]);
+        // xpos layout (paper): 5' side: -(16-pos), 3' side: +(16-pos)
+        // pos=1 → xpos=±15 (outer edge), pos=15 → xpos=±1 (centre)
+        const xScale = d3.scaleLinear().domain([-16, 16]).range([0, iw]);
+        const yScale = d3.scaleLinear().domain([0, 0.44]).range([ih, 0]);
 
-        // Helper: build point array for smiley (5' reversed + 3' forward)
-        function smileySeries(arr5p, arr3p) {
-            const pts = [];
-            for (let i = 0; i < N; i++) pts.push({ x: i, y: arr5p[N - 1 - i] }); // 5' end: pos25→pos1
-            for (let i = 0; i < N; i++) pts.push({ x: N + i, y: arr3p[i] });       // 3' end: pos1→pos25
-            return pts;
-        }
+        function pts5(arr) { return arr.map((v,i) => ({x:-(16-(i+1)), y:v})); }
+        function pts3(arr) { return arr.map((v,i) => ({x: (16-(i+1)), y:v})); }
 
-        const ancPts = smileySeries(SMILEY.anc5p, SMILEY.anc3p);
-        const modPts = smileySeries(SMILEY.mod5p, SMILEY.mod3p);
-        const ambPts = smileySeries(SMILEY.amb5p, SMILEY.amb3p);
-
-        const lineGen = d3.line().x(d => xScale(d.x)).y(d => yScale(d.y)).curve(d3.curveMonotoneX);
-        const areaGen = d3.area().x(d => xScale(d.x)).y0(ih).y1(d => yScale(d.y)).curve(d3.curveMonotoneX);
+        const lineGen = d3.line().x(d=>xScale(d.x)).y(d=>yScale(d.y)).curve(d3.curveMonotoneX);
 
         const svg = d3.select(container).append("svg")
-            .attr("viewBox", `0 0 ${W} ${H}`)
-            .attr("width", "100%").attr("height", H);
-        const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+            .attr("viewBox",`0 0 ${W} ${H}`).attr("width","100%").attr("height",H);
+        const g = svg.append("g").attr("transform",`translate(${margin.left},${margin.top})`);
 
-        // Horizontal grid lines
+        // Grid
         g.append("g").call(d3.axisLeft(yScale).ticks(5).tickSize(-iw).tickFormat(""))
-            .selectAll("line").style("stroke","var(--border-subtle)").style("stroke-dasharray","2,2");
-        g.select(".domain").remove();
+            .selectAll("line").style("stroke","#f2f2f2");
+        g.selectAll(".domain").remove();
 
-        // Center divider (boundary between 5' and 3' ends)
-        g.append("line")
-            .attr("x1", xScale(N - 0.5)).attr("x2", xScale(N - 0.5))
-            .attr("y1", 0).attr("y2", ih)
-            .attr("stroke","var(--border-default)").attr("stroke-dasharray","4,2");
+        // Centre divider
+        g.append("line").attr("x1",xScale(0)).attr("x2",xScale(0))
+            .attr("y1",0).attr("y2",ih).attr("stroke","#e0e0e0").attr("stroke-width",0.8);
 
-        // Ambiguous area + line
-        g.append("path").datum(ambPts).attr("fill","rgba(140,140,140,0.08)").attr("d", areaGen);
-        g.append("path").datum(ambPts).attr("fill","none").attr("stroke","#aaa").attr("stroke-width",1).attr("d", lineGen);
+        // KapK-dec (scaled excess) — thin muted
+        [pts5(DEC.ct), pts3(DEC.ga)].forEach(p =>
+            g.append("path").datum(p).attr("fill","none").attr("stroke",COL_MODERN)
+             .attr("stroke-width",0.9).attr("opacity",0.65).attr("d",lineGen));
 
-        // Modern area + line
-        g.append("path").datum(modPts).attr("fill","rgba(74,142,212,0.08)").attr("d", areaGen);
-        g.append("path").datum(modPts).attr("fill","none").attr("stroke","#4a8ed4").attr("stroke-width",1.5).attr("d", lineGen);
+        // S17 (scaled excess) — thin muted
+        [pts5(S17.ct), pts3(S17.ga)].forEach(p =>
+            g.append("path").datum(p).attr("fill","none").attr("stroke",COL_RELATIVE)
+             .attr("stroke-width",0.9).attr("opacity",0.65).attr("d",lineGen));
 
-        // Ancient area + line (on top)
-        g.append("path").datum(ancPts).attr("fill","rgba(139,26,26,0.1)").attr("d", areaGen);
-        g.append("path").datum(ancPts).attr("fill","none").attr("stroke","#8B1A1A").attr("stroke-width",2).attr("d", lineGen);
-
-        // Data points for ancient (dots)
-        g.selectAll(".anc-dot").data(ancPts.filter((_,i)=>i%3===0))
-            .join("circle").attr("class","anc-dot")
-            .attr("cx", d => xScale(d.x)).attr("cy", d => yScale(d.y))
-            .attr("r", 2.5).attr("fill","#8B1A1A");
-
-        // X axis — show 5' label left, 3' label right, position numbers
-        const xAxisG = g.append("g").attr("transform",`translate(0,${ih})`);
-        // Tick marks at 5' positions 1,5,10,15,20,25 and 3' mirror
-        const tickPositions5p = [0,4,9,14,19,24]; // indices (= pos 25,21,16,11,6,1 from 5' end)
-        const tickPositions3p = tickPositions5p.map(t => N + (N-1-t)); // mirror
-
-        const allTicks = [...tickPositions5p, ...tickPositions3p];
-        const tickLabels = tickPositions5p.map(t => N - t) // 25,21,16,11,6,1
-            .concat(tickPositions5p.map(t => N - t).reverse()); // 1,6,11,16,21,25
-
-        xAxisG.append("line").attr("x1",0).attr("x2",iw).attr("y1",0).attr("y2",0).attr("stroke","var(--border-subtle)");
-        allTicks.forEach((xi, i) => {
-            xAxisG.append("line").attr("x1",xScale(xi)).attr("x2",xScale(xi)).attr("y1",0).attr("y2",4).attr("stroke","var(--border-default)");
-            xAxisG.append("text").attr("x",xScale(xi)).attr("y",13)
-                .attr("text-anchor","middle").attr("font-size","8px").attr("fill","var(--text-tertiary)")
-                .attr("font-family","var(--font-mono)").text(tickLabels[i]);
+        // KapK-anc CI ribbon
+        [[DMG.ct_lo, DMG.ct_hi, pts5], [DMG.ga_lo, DMG.ga_hi, pts3]].forEach(([lo,hi,fn]) => {
+            const ciPts = lo.map((v,i)=>({x: fn(lo)[i].x, lo:v, hi:hi[i]}));
+            g.append("path").datum(ciPts)
+             .attr("fill",COL_ANCIENT).attr("opacity",0.12)
+             .attr("d", d3.area().x(d=>xScale(d.x)).y0(d=>yScale(d.lo)).y1(d=>yScale(d.hi)).curve(d3.curveMonotoneX));
         });
 
-        // End labels
-        xAxisG.append("text").attr("x", xScale(0)).attr("y", 24).attr("text-anchor","middle")
-            .attr("font-size","8px").attr("fill","var(--text-tertiary)").text("5′");
-        xAxisG.append("text").attr("x", xScale(N*2-1)).attr("y", 24).attr("text-anchor","middle")
-            .attr("font-size","8px").attr("fill","var(--text-tertiary)").text("3′");
-        xAxisG.append("text").attr("x", iw/2).attr("y", 28).attr("text-anchor","middle")
-            .attr("font-size","7px").attr("fill","var(--text-tertiary)").text("Position from read terminus");
+        // KapK-anc line + dots (prominent)
+        [pts5(DMG.ct_rate), pts3(DMG.ga_rate)].forEach(p => {
+            g.append("path").datum(p).attr("fill","none").attr("stroke",COL_ANCIENT)
+             .attr("stroke-width",1.4).attr("d",lineGen);
+            g.selectAll(null).data(p).join("circle")
+             .attr("cx",d=>xScale(d.x)).attr("cy",d=>yScale(d.y))
+             .attr("r",2).attr("fill",COL_ANCIENT);
+        });
+
+        // End annotations
+        [[-13,"5′ end","C>T"],[13,"3′ end","G>A"]].forEach(([x,end,mut])=>{
+            g.append("text").attr("x",xScale(x)).attr("y",yScale(0.42))
+             .attr("text-anchor","middle").attr("font-size","8px").attr("font-weight","600").attr("fill","#444").text(end);
+            g.append("text").attr("x",xScale(x)).attr("y",yScale(0.385))
+             .attr("text-anchor","middle").attr("font-size","7px").attr("font-style","italic").attr("fill","#888").text(mut);
+        });
+
+        // X axis — ticks at ±1,5,10,15 → labels 1,5,10,15
+        const xAxisG = g.append("g").attr("transform",`translate(0,${ih})`);
+        xAxisG.call(d3.axisBottom(xScale)
+            .tickValues([-15,-11,-6,6,11,15])
+            .tickFormat(v => Math.abs(v)===15?"1":Math.abs(v)===11?"5":"10"))
+            .selectAll("text").style("font-size","8px").style("fill","#666");
+        xAxisG.select(".domain").style("stroke","#ccc");
+        g.append("text").attr("x",iw/2).attr("y",ih+30).attr("text-anchor","middle")
+            .attr("font-size","8px").attr("fill","#666").text("Position from read terminus");
 
         // Y axis
-        g.append("g").call(d3.axisLeft(yScale).ticks(5).tickFormat(d => `${(d*100).toFixed(0)}%`))
-            .selectAll("text").style("font-size","8px").style("fill","var(--text-tertiary)");
-        g.select(".domain").style("stroke","var(--border-subtle)");
+        g.append("g").call(d3.axisLeft(yScale).ticks(5).tickFormat(d=>`${(d*100).toFixed(0)}%`))
+            .selectAll("text").style("font-size","8px").style("fill","#666");
+        g.append("text").attr("transform","rotate(-90)").attr("x",-ih/2).attr("y",-36)
+            .attr("text-anchor","middle").attr("font-size","8px").attr("fill","#666")
+            .text("Misincorporation frequency");
     }
     buildSmileyPlot();
 
     // ────────────────────────────────────────────────────────
-    // Panel B — Fragment length histogram
+    // Panel B — Fragment length distributions (exact paper Fig 7B)
+    // Three fractions: KapK-anc, KapK-dec, KapK-mod (S17), normalized to %
     // ────────────────────────────────────────────────────────
     function buildFragPlot() {
         const container = document.getElementById("frag-plot");
         const W = container.offsetWidth || 300;
-        const H = 190;
-        const margin = { top: 8, right: 8, bottom: 32, left: 38 };
+        const H = 200;
+        const margin = { top: 10, right: 8, bottom: 36, left: 44 };
         const iw = W - margin.left - margin.right;
         const ih = H - margin.top - margin.bottom;
 
-        const maxAnc = d3.max(FRAG.ancient);
-        const maxMod = d3.max(FRAG.modern) * 4; // scale modern to be visible alongside ancient
-        const yMax = maxAnc * 1.05;
+        const xScale = d3.scaleLinear().domain([25, 250]).range([0, iw]);
+        const yMax = Math.max(d3.max(FRAG_ANC), d3.max(FRAG_DEC), d3.max(FRAG_S17));
+        const yScale = d3.scaleLinear().domain([0, yMax * 1.05]).range([ih, 0]);
 
-        const xScale = d3.scaleLinear().domain([30, 195]).range([0, iw]);
-        const yScaleAnc = d3.scaleLinear().domain([0, yMax]).range([ih, 0]);
-        // Modern on right y-axis (scaled up for visibility)
-        const modMax = d3.max(FRAG.modern);
-        const yScaleMod = d3.scaleLinear().domain([0, modMax]).range([ih, 0]);
-
-        const barW = xScale(35) - xScale(30) - 1;
+        const lineGen = d3.line()
+            .x((_,i) => xScale(FRAG_LENS[i]))
+            .y(d => yScale(d))
+            .curve(d3.curveMonotoneX)
+            .defined(d => d > 0);
+        const areaGen = d3.area()
+            .x((_,i) => xScale(FRAG_LENS[i]))
+            .y0(ih).y1(d => yScale(d))
+            .curve(d3.curveMonotoneX)
+            .defined(d => d > 0);
 
         const svg = d3.select(container).append("svg")
-            .attr("viewBox", `0 0 ${W} ${H}`)
-            .attr("width","100%").attr("height",H);
+            .attr("viewBox",`0 0 ${W} ${H}`).attr("width","100%").attr("height",H);
         const g = svg.append("g").attr("transform",`translate(${margin.left},${margin.top})`);
 
-        // Grid
-        g.append("g").call(d3.axisLeft(yScaleAnc).ticks(4).tickSize(-iw).tickFormat(""))
-            .selectAll("line").style("stroke","var(--border-subtle)").style("stroke-dasharray","2,2");
-        g.select(".domain").remove();
+        g.append("g").call(d3.axisLeft(yScale).ticks(4).tickSize(-iw).tickFormat(""))
+            .selectAll("line").style("stroke","#f2f2f2");
+        g.selectAll(".domain").remove();
 
-        // Ambiguous bars (background)
-        g.selectAll(".bar-amb").data(FRAG.bins)
-            .join("rect").attr("class","bar-amb")
-            .attr("x", d => xScale(d - 2.5))
-            .attr("y", (d,i) => yScaleAnc(FRAG.ambig[i]))
-            .attr("width", barW)
-            .attr("height", (d,i) => ih - yScaleAnc(FRAG.ambig[i]))
-            .attr("fill","rgba(160,160,160,0.25)");
-
-        // Ancient bars
-        g.selectAll(".bar-anc").data(FRAG.bins)
-            .join("rect").attr("class","bar-anc")
-            .attr("x", d => xScale(d - 2.5))
-            .attr("y", (d,i) => yScaleAnc(FRAG.ancient[i]))
-            .attr("width", barW)
-            .attr("height", (d,i) => ih - yScaleAnc(FRAG.ancient[i]))
-            .attr("fill","rgba(139,26,26,0.65)");
-
-        // Modern line (separate scale, overlaid)
-        const modLine = d3.line()
-            .x((d,i) => xScale(FRAG.bins[i]))
-            .y((d) => yScaleMod(d))
-            .curve(d3.curveMonotoneX);
-        g.append("path").datum(FRAG.modern)
-            .attr("fill","rgba(42,122,90,0.15)")
-            .attr("d", d3.area()
-                .x((d,i) => xScale(FRAG.bins[i]))
-                .y0(ih).y1(d => yScaleMod(d))
-                .curve(d3.curveMonotoneX));
-        g.append("path").datum(FRAG.modern)
-            .attr("fill","none").attr("stroke","#2a7a5a").attr("stroke-width",1.5)
-            .attr("d", modLine);
-
-        // Dashed vertical lines at means
-        [61, 129].forEach((mean, i) => {
-            g.append("line")
-                .attr("x1", xScale(mean)).attr("x2", xScale(mean))
-                .attr("y1", 0).attr("y2", ih)
-                .attr("stroke", i === 0 ? "#8B1A1A" : "#2a7a5a")
-                .attr("stroke-dasharray","3,2").attr("stroke-width",1);
+        const series = [
+            {data: FRAG_ANC, col: COL_ANCIENT},
+            {data: FRAG_DEC, col: COL_MODERN},
+            {data: FRAG_S17, col: COL_RELATIVE},
+        ];
+        series.forEach(s => {
+            g.append("path").datum(s.data).attr("fill",s.col).attr("opacity",0.10).attr("d",areaGen);
+            g.append("path").datum(s.data).attr("fill","none").attr("stroke",s.col)
+             .attr("stroke-width",1.0).attr("d",lineGen);
         });
 
-        // X axis
-        const xAxis = g.append("g").attr("transform",`translate(0,${ih})`);
-        xAxis.call(d3.axisBottom(xScale).ticks(6).tickFormat(d => d))
-            .selectAll("text").style("font-size","8px").style("fill","var(--text-tertiary)");
-        xAxis.select(".domain").style("stroke","var(--border-subtle)");
-        g.append("text").attr("x", iw/2).attr("y", ih+30).attr("text-anchor","middle")
-            .attr("font-size","8px").attr("fill","var(--text-tertiary)").text("Fragment length (bp)");
+        const xAxisG = g.append("g").attr("transform",`translate(0,${ih})`);
+        xAxisG.call(d3.axisBottom(xScale).ticks(6)).selectAll("text").style("font-size","8px").style("fill","#666");
+        xAxisG.select(".domain").style("stroke","#ccc");
+        g.append("text").attr("x",iw/2).attr("y",ih+30).attr("text-anchor","middle")
+            .attr("font-size","8px").attr("fill","#666").text("Fragment length (bp)");
 
-        // Y axis (ancient, left)
-        g.append("g").call(d3.axisLeft(yScaleAnc).ticks(4).tickFormat(d => d >= 1e6 ? `${(d/1e6).toFixed(1)}M` : d >= 1e3 ? `${(d/1e3).toFixed(0)}k` : d))
-            .selectAll("text").style("font-size","8px").style("fill","var(--text-tertiary)");
+        g.append("g").call(d3.axisLeft(yScale).ticks(4).tickFormat(d=>`${d.toFixed(0)}%`))
+            .selectAll("text").style("font-size","8px").style("fill","#666");
+        g.append("text").attr("transform","rotate(-90)").attr("x",-ih/2).attr("y",-36)
+            .attr("text-anchor","middle").attr("font-size","8px").attr("fill","#666")
+            .text("Frequency (%)");
     }
     buildFragPlot();
 
