@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Methanoflorentales phylogeny — Kap København</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css?v=85">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        html, body { height: 100%; margin: 0; background: var(--bg-deep); overflow: hidden; }
+
+        .page-header {
+            padding: var(--space-md) var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex; align-items: center; gap: var(--space-lg);
+            background: var(--bg-base); z-index: 10; position: relative;
+        }
+        .back-link {
+            display: flex; align-items: center; gap: var(--space-sm);
+            color: var(--text-tertiary); text-decoration: none; font-size: 0.875rem;
+            transition: color var(--transition-fast);
+        }
+        .back-link:hover { color: var(--text-primary); }
+        .back-link svg { width: 16px; height: 16px; }
+        .header-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); flex: 1; }
+        .header-sub { font-size: 0.8rem; color: var(--text-tertiary); margin-top: 1px; }
+
+        .tree-controls {
+            display: flex; align-items: center; gap: var(--space-md);
+            padding: 0 var(--space-xl); font-size: 0.8rem; color: var(--text-secondary);
+        }
+        .ctrl-btn {
+            padding: 4px 10px; border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm); background: var(--bg-base);
+            color: var(--text-secondary); cursor: pointer; font-size: 0.78rem;
+            font-family: var(--font-sans); transition: all var(--transition-fast);
+        }
+        .ctrl-btn:hover { background: var(--bg-raised); border-color: var(--accent-primary); color: var(--text-primary); }
+
+        .tree-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed; background: var(--bg-base); border: 1px solid var(--border-default);
+            border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md);
+            font-size: 0.8rem; color: var(--text-primary); pointer-events: none;
+            box-shadow: var(--shadow-md); max-width: 300px; z-index: 100;
+            opacity: 0; transition: opacity 0.15s;
+        }
+        .tooltip.show { opacity: 1; }
+        .tt-name { font-weight: 600; font-family: var(--font-mono); font-size: 0.78rem; margin-bottom: 2px; }
+        .tt-ncbi { color: var(--text-secondary); font-size: 0.75rem; font-style: italic; margin-bottom: 2px; }
+        .tt-biome { font-size: 0.75rem; font-weight: 600; margin-bottom: 2px; }
+        .tt-desc { color: var(--text-tertiary); font-size: 0.72rem; line-height: 1.4; }
+
+        /* Legend */
+        .legend {
+            position: absolute; bottom: var(--space-xl); left: var(--space-xl);
+            background: var(--bg-base); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg); padding: var(--space-md);
+            font-size: 0.78rem; z-index: 10;
+        }
+        .legend-title {
+            font-size: 0.72rem; font-weight: 600; color: var(--text-tertiary);
+            text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-sm);
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: var(--space-sm);
+            margin-bottom: 4px; color: var(--text-secondary);
+        }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+        /* Tree SVG styles */
+        .tree-link { fill: none; stroke: #999; stroke-width: 0.8px; }
+        .tree-link.kapk { stroke: #A63820; stroke-width: 1.2px; }
+
+        .tip-label {
+            font-family: var(--font-mono); font-size: 10px; fill: var(--text-secondary);
+            cursor: pointer; dominant-baseline: middle;
+        }
+        .tip-label.kapk { fill: #A63820; font-weight: 600; font-size: 11px; }
+        .tip-label.kapkmod { fill: #6B9AB8; font-weight: 600; font-size: 11px; }
+        .tip-label:hover { fill: var(--text-primary); }
+
+        .support-label {
+            font-family: var(--font-mono); font-size: 7.5px; fill: var(--text-tertiary);
+        }
+
+        .stasis-box { fill: #A63820; fill-opacity: 0.06; stroke: #A63820; stroke-opacity: 0.3; stroke-width: 0.8; }
+    </style>
+</head>
+<body>
+    <div style="display:flex; flex-direction:column; height:100vh;">
+        <div class="page-header">
+            <a href="./" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                MAGs
+            </a>
+            <div style="flex:1">
+                <div class="header-title">Methanoflorentales phylogeny — 79 taxa</div>
+                <div class="header-sub">IQ-TREE codon ML · GTR+G4 · branch lengths in substitutions/site</div>
+            </div>
+            <div class="tree-controls">
+                <button class="ctrl-btn" id="btn-reset">Reset zoom</button>
+                <button class="ctrl-btn" id="btn-labels">Toggle labels</button>
+                <span style="color:var(--text-tertiary);">Scroll to zoom · Drag to pan</span>
+            </div>
+        </div>
+
+        <div style="position:relative; flex:1; overflow:hidden;" id="tree-container">
+            <div class="legend" id="legend"></div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+    const BIOME_COLS = {
+        "Kap København": "#A63820",
+        "Permafrost":    "#8AAFC2",
+        "Peatland":      "#8BAD6A",
+        "Arctic peat":   "#6B8C6B",
+        "Tundra":        "#9B8FB8",
+        "Freshwater":    "#6AA898",
+        "Sediment":      "#B09070",
+        "Soil":          "#C4A87A",
+        "Other":         "#bfbfbf",
+        "Unknown":       "#dddddd",
+    };
+
+    // ── Newick parser ──────────────────────────────────────────────────────────
+    function parseNewick(s) {
+        let pos = 0;
+        function ws() { while (pos < s.length && /\s/.test(s[pos])) pos++; }
+        function parseNode() {
+            ws();
+            const node = { children: [], name: '', length: 0, support: '' };
+            if (s[pos] === '(') {
+                pos++; // consume '('
+                node.children.push(parseNode());
+                while (pos < s.length && s[pos] === ',') { pos++; node.children.push(parseNode()); }
+                if (s[pos] === ')') pos++;
+            }
+            // Name or support
+            ws();
+            let nameStr = '';
+            while (pos < s.length && !/[:,;()[\]]/.test(s[pos])) nameStr += s[pos++];
+            nameStr = nameStr.trim();
+            if (node.children.length > 0) {
+                node.support = nameStr; // internal node
+            } else {
+                node.name = nameStr;   // leaf
+            }
+            // Branch length
+            if (s[pos] === ':') {
+                pos++;
+                let blStr = '';
+                while (pos < s.length && /[0-9.eE+\-]/.test(s[pos])) blStr += s[pos++];
+                node.length = parseFloat(blStr) || 0;
+            }
+            ws();
+            return node;
+        }
+        return parseNode();
+    }
+
+    // ── Layout: branch-length scaled rectangular dendrogram ──────────────────
+    function layoutTree(root, width, height) {
+        // 1. Assign depths via accumulated branch lengths
+        function setDepth(n, d) {
+            n.accLen = d + n.length;
+            if (n.children.length) n.children.forEach(c => setDepth(c, n.accLen));
+        }
+        setDepth(root, 0);
+
+        // 2. Assign y positions to leaves (evenly spaced)
+        const leaves = [];
+        function collectLeaves(n) {
+            if (!n.children.length) { leaves.push(n); return; }
+            n.children.forEach(collectLeaves);
+        }
+        collectLeaves(root);
+        leaves.forEach((l, i) => { l.y = i; });
+
+        // 3. Propagate y to internal nodes (mean of children)
+        function setY(n) {
+            if (!n.children.length) return;
+            n.children.forEach(setY);
+            n.y = d3.mean(n.children, c => c.y);
+        }
+        setY(root);
+
+        const maxDepth = d3.max(leaves, l => l.accLen);
+        const yStep = height / (leaves.length - 1);
+        function applyScale(n) {
+            n.px = (n.accLen / maxDepth) * width;
+            n.py = n.y * yStep;
+            if (n.children.length) n.children.forEach(applyScale);
+        }
+        applyScale(root);
+        return { root, leaves, maxDepth };
+    }
+
+    // ── Main ──────────────────────────────────────────────────────────────────
+    fetch('data/tree_meta.json').then(r => r.json()).then(data => {
+        const { newick, meta, labels } = data;
+        const root = parseNewick(newick);
+
+        const container = document.getElementById('tree-container');
+        const W = container.clientWidth;
+        const H = container.clientHeight;
+        const margin = { top: 30, right: 260, bottom: 30, left: 40 };
+        const iw = W - margin.left - margin.right;
+        const ih = H - margin.top - margin.bottom;
+
+        const { leaves, maxDepth } = layoutTree(root, iw, ih);
+
+        const svg = d3.select(container).append('svg')
+            .attr('width', W).attr('height', H)
+            .style('position', 'absolute').style('top', 0).style('left', 0);
+
+        const zoomG = svg.append('g');
+        const g = zoomG.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Zoom
+        const zoom = d3.zoom()
+            .scaleExtent([0.3, 8])
+            .on('zoom', e => zoomG.attr('transform', e.transform));
+        svg.call(zoom);
+        document.getElementById('btn-reset').onclick = () =>
+            svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
+
+        // ── Draw links (elbow) ──────────────────────────────────────────────
+        function allNodes(n) {
+            const out = [n];
+            n.children.forEach(c => out.push(...allNodes(c)));
+            return out;
+        }
+        const nodes = allNodes(root);
+
+        // KapK clade detection
+        const kapkNames = new Set(['ancient_consensus', 's17_ancient_relative', 'modern_consensus']);
+
+        g.selectAll('.tree-link')
+            .data(nodes.filter(n => n !== root))
+            .join('path')
+            .attr('class', d => {
+                const isKapK = kapkNames.has(d.name) || (d.children && d.children.some(c => kapkNames.has(c.name)));
+                return `tree-link${isKapK ? ' kapk' : ''}`;
+            })
+            .attr('d', d => {
+                const px = d.parent.px, py = d.parent.py, cx = d.px, cy = d.py;
+                return `M${cx},${cy} H${px} V${py}`;
+            });
+
+        // ── Stasis clade box ────────────────────────────────────────────────
+        const stasisLeaves = leaves.filter(l => kapkNames.has(l.name));
+        if (stasisLeaves.length >= 2) {
+            const ys = stasisLeaves.map(l => l.py);
+            const ylo = d3.min(ys) - 8, yhi = d3.max(ys) + 8;
+            const xlo = d3.min(stasisLeaves.map(l => l.px)) - 20;
+            g.insert('rect', ':first-child')
+                .attr('class', 'stasis-box')
+                .attr('x', xlo).attr('y', ylo)
+                .attr('width', iw - xlo + margin.right - 10)
+                .attr('height', yhi - ylo)
+                .attr('rx', 4);
+            g.append('text')
+                .attr('x', iw + 5).attr('y', (ylo + yhi) / 2)
+                .attr('font-size', '8px').attr('fill', '#A63820').attr('font-weight', '600')
+                .attr('dominant-baseline', 'middle').attr('font-family', 'var(--font-mono)')
+                .text('stasis clade');
+        }
+
+        // ── Internal node support labels ────────────────────────────────────
+        const internalNodes = nodes.filter(n => n.children.length && n !== root && n.support);
+        g.selectAll('.support-label')
+            .data(internalNodes)
+            .join('text')
+            .attr('class', 'support-label')
+            .attr('x', d => d.px - 2).attr('y', d => d.py - 3)
+            .attr('text-anchor', 'end')
+            .text(d => {
+                const parts = d.support.split('/');
+                const sh = parseFloat(parts[0]), uf = parseFloat(parts[1]);
+                if (!isNaN(uf) && uf >= 95) return `${Math.round(uf)}`;
+                return '';
+            });
+
+        // ── Tip nodes ───────────────────────────────────────────────────────
+        const tipG = g.selectAll('.tip-node')
+            .data(leaves)
+            .join('g')
+            .attr('class', 'tip-node')
+            .attr('transform', d => `translate(${d.px},${d.py})`);
+
+        const tooltip = document.getElementById('tooltip');
+
+        tipG.each(function(d) {
+            const m = meta[d.name] || { biome: 'Unknown', desc: '', ncbi: '' };
+            const col = BIOME_COLS[m.biome] || '#ccc';
+            const isKapK = kapkNames.has(d.name);
+            const isAnc  = d.name === 'ancient_consensus';
+            const el = d3.select(this);
+
+            if (isAnc) {
+                // Filled red square (paper style)
+                el.append('rect').attr('x', -5).attr('y', -5)
+                    .attr('width', 10).attr('height', 10).attr('fill', '#A63820');
+            } else if (isKapK) {
+                // Open square
+                el.append('rect').attr('x', -5).attr('y', -5)
+                    .attr('width', 10).attr('height', 10)
+                    .attr('fill', 'none').attr('stroke', '#A63820').attr('stroke-width', 1.5);
+            } else {
+                el.append('circle').attr('r', 4)
+                    .attr('fill', col).attr('stroke', 'white').attr('stroke-width', 0.5);
+            }
+
+            const dispName = labels[d.name] || d.name;
+            const labelClass = isAnc ? 'tip-label kapk' :
+                               d.name === 'modern_consensus' ? 'tip-label kapkmod' : 'tip-label';
+            el.append('text').attr('class', labelClass)
+                .attr('x', 8).attr('dy', '0.32em').text(dispName);
+
+            // Tooltip
+            el.style('cursor', 'pointer')
+                .on('mouseover', function(event) {
+                    tooltip.innerHTML = `
+                        <div class="tt-name">${d.name}</div>
+                        ${m.ncbi ? `<div class="tt-ncbi">${m.ncbi}</div>` : ''}
+                        <div class="tt-biome" style="color:${col}">${m.biome}</div>
+                        ${m.desc ? `<div class="tt-desc">${m.desc}</div>` : ''}
+                    `;
+                    tooltip.classList.add('show');
+                    tooltip.style.left = (event.clientX + 14) + 'px';
+                    tooltip.style.top  = (event.clientY - 10) + 'px';
+                })
+                .on('mousemove', function(event) {
+                    tooltip.style.left = (event.clientX + 14) + 'px';
+                    tooltip.style.top  = (event.clientY - 10) + 'px';
+                })
+                .on('mouseout', () => tooltip.classList.remove('show'));
+        });
+
+        // ── Scale bar ───────────────────────────────────────────────────────
+        const barVal = 0.05;
+        const barPx  = (barVal / maxDepth) * iw;
+        const barY   = ih + 15;
+        g.append('line').attr('x1', 0).attr('x2', barPx).attr('y1', barY).attr('y2', barY)
+            .attr('stroke', '#999').attr('stroke-width', 1);
+        [0, barPx].forEach(x => g.append('line')
+            .attr('x1', x).attr('x2', x).attr('y1', barY - 3).attr('y2', barY + 3)
+            .attr('stroke', '#999').attr('stroke-width', 1));
+        g.append('text').attr('x', barPx / 2).attr('y', barY + 14)
+            .attr('text-anchor', 'middle').attr('font-size', '9px')
+            .attr('fill', '#999').attr('font-family', 'var(--font-mono)')
+            .text('0.05 sub/site');
+
+        // ── Legend ──────────────────────────────────────────────────────────
+        const present = [...new Set(leaves.map(l => (meta[l.name] || {biome:'Unknown'}).biome))];
+        const order = Object.keys(BIOME_COLS).filter(b => present.includes(b));
+        const legEl = document.getElementById('legend');
+        legEl.innerHTML = `<div class="legend-title">Biome</div>` +
+            order.map(b => `<div class="legend-item">
+                <div class="legend-dot" style="background:${BIOME_COLS[b]}"></div>${b}
+            </div>`).join('');
+
+        // ── Toggle labels ───────────────────────────────────────────────────
+        let labelsVisible = true;
+        document.getElementById('btn-labels').onclick = () => {
+            labelsVisible = !labelsVisible;
+            g.selectAll('.tip-label').style('opacity', labelsVisible ? 1 : 0);
+        };
+    });
+    </script>
+</body>
+</html>
