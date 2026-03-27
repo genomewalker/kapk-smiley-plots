@@ -438,7 +438,7 @@
 
         .focal-stats-row {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             border-top: 1px solid var(--border-subtle);
         }
         .focal-stat {
@@ -875,7 +875,7 @@
                         <div class="focal-taxonomy">d__Archaea · p__Halobacteriota · c__Bog-38 · o__Bog-38</div>
                         <div class="focal-stasis-badge">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                            Evolutionary stasis — 942 non-damage SNPs over ~2 million years · 99.94% ANI
+                            Evolutionary stasis — 2,579 non-damage SNPs (KapK-anc vs KapK-mod) · 99.42% ANI · 82–244× rate suppression
                         </div>
                     </div>
                 </div>
@@ -899,6 +899,10 @@
                     <div class="focal-stat">
                         <div class="focal-stat-label">Ancient fraction</div>
                         <div class="focal-stat-value">63.5<span class="focal-stat-unit">%</span></div>
+                    </div>
+                    <div class="focal-stat">
+                        <div class="focal-stat-label">KapK-anc mean frag</div>
+                        <div class="focal-stat-value">56.5<span class="focal-stat-unit"> bp</span></div>
                     </div>
                 </div>
             </div>
@@ -945,7 +949,7 @@
                     Evolutionary stasis — key evidence
                 </div>
                 <div class="stasis-callout-body">
-                    The KapK ancient consensus (2 Ma) differs from the co-extracted modern fraction by only <strong>942 non-damage SNPs</strong> (99.94% ANI), and from the S17 living analogue by 2,579 non-damage SNPs (99.42% ANI). The ancient genome falls within the species boundary (&gt;95% ANI) with all extant Methanoflorentales and shares &gt;98% ANI with the closest references (NAY3300025461b7, SOIL100000032). Molecular dating (BEAST2 codon tip-dating) estimates a clock rate of 1.13 × 10⁻⁸ substitutions/site/year and places the ancient–modern MRCA at ~2.01 Ma.
+                    KapK-anc (~2 Ma) and KapK-mod (S17 living analogue) differ at <strong>2,579 non-damage sites</strong> across 1,689,323 callable positions (99.42% ANI). Comparison with KapK-dec (co-extracted modern fraction) yields 942 non-damage differences. Both genomes exceed 98% ANI with the closest extant relatives. Under an explicit two-clock model the posterior rate ratio is <strong>~244-fold</strong> (P(&gt;10×) = 0.948); the strict-clock lower bound is <strong>82-fold</strong> suppression relative to background Methanoflorentales. Molecular dating recovers the tip age at 1.92 Ma without a geological prior (95% HPD 1.87–2.11 Ma).
                 </div>
             </div>
 
@@ -1524,6 +1528,27 @@
         xAxisG.select(".domain").style("stroke","#ccc");
         g.append("text").attr("x",iw/2).attr("y",ih+30).attr("text-anchor","middle")
             .attr("font-size","8px").attr("fill","#666").text("Fragment length (bp)");
+
+        // Mean lines + labels (R script: geom_segment + geom_text staircase)
+        const means = [
+            { mu: 56.5,  col: COL_ANCIENT,  label: "57 bp",  labelY: 0.88 },
+            { mu: 129.4, col: COL_MODERN,   label: "129 bp", labelY: 0.76 },
+            { mu: 202.3, col: COL_RELATIVE, label: "202 bp", labelY: 0.64 },
+        ];
+        means.forEach(m => {
+            const x = xScale(m.mu);
+            const yStop = yScale(yMax * m.labelY);
+            g.append("line")
+                .attr("x1", x).attr("x2", x).attr("y1", ih).attr("y2", yStop)
+                .attr("stroke", m.col).attr("stroke-dasharray", "3,2")
+                .attr("stroke-width", 0.8).attr("opacity", 0.6);
+            g.append("text")
+                .attr("x", x + 3).attr("y", yStop)
+                .attr("font-size", "8px").attr("fill", m.col)
+                .attr("font-family", "var(--font-mono)")
+                .attr("dominant-baseline", "auto")
+                .text(m.label);
+        });
 
         g.append("g").call(d3.axisLeft(yScale).ticks(4).tickFormat(d=>`${d.toFixed(0)}%`))
             .selectAll("text").style("font-size","8px").style("fill","#666");
