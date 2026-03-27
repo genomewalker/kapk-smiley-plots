@@ -208,7 +208,21 @@
 
     // ── Main ──────────────────────────────────────────────────────────────────
     fetch('data/tree_meta.json').then(r => r.json()).then(data => {
-        const { newick, meta, labels } = data;
+        const { newick, meta, labels, snp_mod, snp_s17, ani_mod, ani_s17 } = data;
+
+        // Label format matching R script make_label():
+        // ancient_consensus    → "KapK-anc"
+        // s17_ancient_relative → "KapK-mod | 2,579 SNPs | 99.4% ANI"
+        // other refs           → "name | ANI%" (if ANI available)
+        function makeLabel(name) {
+            const disp = labels[name] || name;
+            if (name === 'ancient_consensus') return disp;
+            if (name === 's17_ancient_relative')
+                return `${disp} | ${snp_s17.toLocaleString()} SNPs | ${ani_s17.toFixed(1)}% ANI`;
+            const m = meta[name];
+            if (m && m.ani != null) return `${disp} | ${m.ani.toFixed(1)}% ANI`;
+            return disp;
+        }
         const root = parseNewick(newick);
 
         const container = document.getElementById('tree-container');
@@ -258,24 +272,60 @@
                 return `M${cx},${cy} H${px} V${py}`;
             });
 
-        // ── Stasis clade box ────────────────────────────────────────────────
+        // ── Stasis clade box + annotations ──────────────────────────────────
         const stasisLeaves = leaves.filter(l => kapkNames.has(l.name));
         if (stasisLeaves.length >= 2) {
             const ys = stasisLeaves.map(l => l.py);
             const ylo = d3.min(ys) - 8, yhi = d3.max(ys) + 8;
             const xlo = d3.min(stasisLeaves.map(l => l.px)) - 20;
+            // Find MRCA x position (parent node of stasis clade)
+            function findMRCA(n, names, found = []) {
+                if (!n.children.length) { if (names.has(n.name)) found.push(n); return found; }
+                n.children.forEach(c => findMRCA(c, names, found));
+                return found;
+            }
+            // Shade box
             g.insert('rect', ':first-child')
                 .attr('class', 'stasis-box')
                 .attr('x', xlo).attr('y', ylo)
-                .attr('width', iw - xlo + margin.right - 10)
+                .attr('width', iw - xlo + 4)
                 .attr('height', yhi - ylo)
                 .attr('rx', 4);
+
+            // "~2 Ma" annotation above clade (R: mrca_label_dat)
+            const stasisAncNode = stasisLeaves.find(l => l.name === 'ancient_consensus');
+            if (stasisAncNode && stasisAncNode.parent) {
+                const mrcaX = stasisAncNode.parent.px;
+                const mrcaY = ylo - 4;
+                g.append('text')
+                    .attr('x', mrcaX).attr('y', mrcaY)
+                    .attr('text-anchor', 'middle').attr('font-size', '8px')
+                    .attr('font-weight', '600').attr('fill', '#A63820')
+                    .attr('font-family', 'var(--font-mono)').text('~2 Ma');
+                // Arrow down to MRCA
+                g.append('line')
+                    .attr('x1', mrcaX).attr('x2', mrcaX)
+                    .attr('y1', mrcaY + 8).attr('y2', stasisAncNode.parent.py - 2)
+                    .attr('stroke', '#A63820').attr('stroke-width', 0.8)
+                    .attr('marker-end', 'url(#arrow-anc)');
+            }
+
+            // "82–244× rate suppression" annotation (R: rate_ann_dat)
             g.append('text')
-                .attr('x', iw + 5).attr('y', (ylo + yhi) / 2)
-                .attr('font-size', '8px').attr('fill', '#A63820').attr('font-weight', '600')
-                .attr('dominant-baseline', 'middle').attr('font-family', 'var(--font-mono)')
-                .text('stasis clade');
+                .attr('x', xlo - 4).attr('y', ylo - 14)
+                .attr('text-anchor', 'end').attr('font-size', '7.5px')
+                .attr('fill', '#A63820').attr('font-style', 'italic')
+                .attr('font-family', 'var(--font-sans)')
+                .text('82–244× rate suppression');
         }
+
+        // Arrow marker
+        svg.append('defs').append('marker')
+            .attr('id', 'arrow-anc').attr('viewBox', '0 -3 6 6')
+            .attr('refX', 6).attr('refY', 0)
+            .attr('markerWidth', 4).attr('markerHeight', 4)
+            .attr('orient', 'auto')
+            .append('path').attr('d', 'M0,-3L6,0L0,3').attr('fill', '#A63820');
 
         // ── Internal node support labels ────────────────────────────────────
         const internalNodes = nodes.filter(n => n.children.length && n !== root && n.support);
@@ -322,8 +372,9 @@
                     .attr('fill', col).attr('stroke', 'white').attr('stroke-width', 0.5);
             }
 
-            const dispName = labels[d.name] || d.name;
+            const dispName = makeLabel(d.name);
             const labelClass = isAnc ? 'tip-label kapk' :
+                               d.name === 's17_ancient_relative' ? 'tip-label kapk' :
                                d.name === 'modern_consensus' ? 'tip-label kapkmod' : 'tip-label';
             el.append('text').attr('class', labelClass)
                 .attr('x', 8).attr('dy', '0.32em').text(dispName);
