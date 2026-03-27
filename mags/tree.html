@@ -257,6 +257,10 @@
         }
         const nodes = allNodes(root);
 
+        // Set parent references (Newick parser doesn't do this)
+        root.parent = null;
+        nodes.forEach(n => n.children.forEach(c => { c.parent = n; }));
+
         // KapK clade detection
         const kapkNames = new Set(['ancient_consensus', 's17_ancient_relative', 'modern_consensus']);
 
