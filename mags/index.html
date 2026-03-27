@@ -8,815 +8,211 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles.css?v=85">
+    <link rel="stylesheet" href="../styles.css?v=86">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        html, body {
-            height: auto;
-            overflow: auto;
-            background: var(--bg-deep);
-        }
+html, body { height:auto; overflow:auto; background:var(--bg-deep); }
 
-        .page-header {
-            padding: var(--space-lg) var(--space-xl);
-            border-bottom: 1px solid var(--border-subtle);
-            display: flex;
-            align-items: center;
-            gap: var(--space-lg);
-            background: var(--bg-base);
-        }
+/* ─── Page header ─── */
+.page-header { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border-subtle); display:flex; align-items:center; gap:var(--space-lg); background:var(--bg-base); position:sticky; top:0; z-index:10; }
+.back-link { display:flex; align-items:center; gap:var(--space-sm); color:var(--text-tertiary); text-decoration:none; font-size:0.875rem; transition:color var(--transition-fast); }
+.back-link:hover { color:var(--text-primary); }
+.back-link svg { width:16px; height:16px; }
+.page-header-content { flex:1; }
+.page-header-title { font-size:1rem; font-weight:600; color:var(--text-primary); }
+.page-header-sub { font-size:0.8rem; color:var(--text-tertiary); margin-top:1px; }
+.page-main { max-width:1200px; margin:0 auto; padding:var(--space-2xl) var(--space-xl); }
 
-        .back-link {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            color: var(--text-tertiary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color var(--transition-fast);
-        }
-        .back-link:hover { color: var(--text-primary); }
-        .back-link svg { width: 16px; height: 16px; }
+/* ─── Summary strip ─── */
+.summary-strip { display:flex; align-items:stretch; background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:var(--space-2xl); }
+.summary-stat { padding:var(--space-lg) var(--space-xl); border-right:1px solid var(--border-subtle); display:flex; flex-direction:column; justify-content:center; flex-shrink:0; }
+.summary-stat.dl-stat { border-right:none; flex:1; align-items:flex-end; justify-content:center; }
+.stat-value { font-size:1.6rem; font-weight:700; color:var(--text-primary); line-height:1; font-family:var(--font-mono); }
+.stat-value.accent { color:var(--accent-secondary); }
+.stat-label { font-size:0.72rem; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.05em; margin-top:5px; white-space:nowrap; }
+.dl-all-btn { display:inline-flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm) var(--space-md); background:var(--bg-raised); border:1px solid var(--border-default); border-radius:var(--radius-md); color:var(--text-secondary); text-decoration:none; font-size:0.82rem; font-weight:500; transition:all var(--transition-fast); white-space:nowrap; }
+.dl-all-btn:hover { background:var(--bg-elevated); border-color:var(--accent-primary); color:var(--text-primary); }
+.dl-all-btn svg { width:14px; height:14px; }
 
-        .page-header-content { flex: 1; }
-        .page-header-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        .page-header-sub {
-            font-size: 0.85rem;
-            color: var(--text-tertiary);
-            margin-top: 2px;
-        }
+/* ─── Section title ─── */
+.section-title { font-size:0.75rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:var(--space-md); }
 
-        .page-main {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: var(--space-2xl) var(--space-xl);
-        }
+/* ─── Focal MAG card ─── */
+.focal-section { margin-bottom:var(--space-2xl); }
+.focal-card { background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:var(--space-lg); }
+.focal-header { padding:var(--space-xl); display:flex; align-items:flex-start; gap:var(--space-xl); border-bottom:1px solid var(--border-subtle); }
+.focal-domain-badge { flex-shrink:0; width:52px; height:52px; border-radius:var(--radius-md); display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:700; font-size:0.95rem; }
+.focal-domain-badge.archaea { background:rgba(147,51,234,0.1); border:1px solid rgba(147,51,234,0.2); color:var(--damage-model); }
+.focal-domain-badge.bacteria { background:rgba(74,142,212,0.1); border:1px solid rgba(74,142,212,0.2); color:var(--damage-3prime); }
+.focal-domain-label { font-size:0.52rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; margin-top:2px; }
+.focal-info { flex:1; }
+.focal-bin-id { font-family:var(--font-mono); font-size:0.8rem; color:var(--text-tertiary); margin-bottom:3px; }
+.focal-organism { font-size:1.4rem; font-weight:700; color:var(--text-primary); line-height:1.2; margin-bottom:var(--space-sm); }
+.focal-taxonomy { font-size:0.82rem; color:var(--text-secondary); font-style:italic; margin-bottom:var(--space-sm); }
+.focal-stasis-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(45,150,89,0.1); border:1px solid rgba(45,150,89,0.25); color:var(--status-damaged); font-size:0.78rem; font-weight:600; padding:4px 10px; border-radius:99px; }
+.focal-stats-row { display:grid; grid-template-columns:repeat(6,1fr); }
+.focal-stat { padding:var(--space-md) var(--space-lg); border-right:1px solid var(--border-subtle); }
+.focal-stat:last-child { border-right:none; }
+.focal-stat-label { font-size:0.68rem; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:3px; }
+.focal-stat-value { font-family:var(--font-mono); font-size:1rem; font-weight:600; color:var(--text-primary); }
+.focal-stat-unit { font-size:0.72rem; color:var(--text-tertiary); font-weight:400; }
 
-        /* ─── Summary cards ─── */
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: var(--space-lg);
-            margin-bottom: var(--space-2xl);
-        }
-        .summary-card {
-            background: var(--bg-base);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
-        }
-        .summary-card-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1;
-            font-family: var(--font-mono);
-        }
-        .summary-card-label {
-            font-size: 0.8rem;
-            color: var(--text-tertiary);
-            margin-top: var(--space-xs);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .summary-card.accent { border-color: var(--accent-primary); }
-        .summary-card.accent .summary-card-value { color: var(--accent-secondary); }
+/* ─── Genome versions ─── */
+.genome-versions { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-md); margin-bottom:var(--space-lg); }
+.genome-version-card { background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:var(--space-lg); display:flex; flex-direction:column; }
+.genome-version-card.anc { border-color:var(--accent-primary); background:rgba(201,145,90,0.03); }
+.gv-tag { font-family:var(--font-mono); font-size:0.68rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:var(--space-xs); }
+.genome-version-card.anc .gv-tag { color:var(--accent-secondary); }
+.gv-name { font-size:0.95rem; font-weight:600; color:var(--text-primary); margin-bottom:var(--space-sm); }
+.gv-desc { font-size:0.8rem; color:var(--text-secondary); line-height:1.5; margin-bottom:var(--space-md); flex:1; }
+.gv-meta { font-size:0.72rem; color:var(--text-tertiary); font-family:var(--font-mono); margin-bottom:var(--space-md); }
+.gv-download { display:inline-flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm) var(--space-md); background:var(--bg-raised); border:1px solid var(--border-default); border-radius:var(--radius-md); color:var(--text-primary); text-decoration:none; font-size:0.8rem; font-weight:500; transition:all var(--transition-fast); width:100%; justify-content:center; }
+.gv-download:hover { background:var(--bg-elevated); border-color:var(--accent-primary); }
+.genome-version-card.anc .gv-download { background:rgba(201,145,90,0.1); border-color:var(--accent-primary); }
+.gv-download svg { width:14px; height:14px; color:var(--text-tertiary); }
 
-        /* ─── Section headings ─── */
-        .section-title {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: var(--space-md);
-        }
+/* ─── Stasis callout ─── */
+.stasis-callout { background:rgba(45,150,89,0.05); border:1px solid rgba(45,150,89,0.18); border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom:var(--space-lg); }
+.stasis-callout-title { font-size:0.82rem; font-weight:700; color:var(--status-damaged); margin-bottom:var(--space-sm); display:flex; align-items:center; gap:var(--space-sm); }
+.stasis-callout-body { font-size:0.875rem; color:var(--text-secondary); line-height:1.6; }
 
-        /* ─── MAGs table ─── */
-        .table-wrapper {
-            background: var(--bg-base);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            margin-bottom: var(--space-2xl);
-        }
+/* ─── Figure panels ─── */
+.full-panel { background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:var(--space-lg); }
+.panel-header { padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:space-between; }
+.panel-title { font-size:0.85rem; font-weight:600; color:var(--text-primary); }
+.panel-subtitle { font-size:0.72rem; color:var(--text-tertiary); }
+.panel-body { padding:var(--space-lg); }
+.fig-grid { display:grid; grid-template-columns:1fr 1fr 1.2fr; border-top:1px solid var(--border-subtle); }
+.fig-panel { padding:var(--space-lg); }
+.fig-panel:not(:last-child) { border-right:1px solid var(--border-subtle); }
+.fig-label { font-size:0.68rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:var(--space-sm); display:flex; align-items:center; justify-content:space-between; }
 
-        .table-controls {
-            padding: var(--space-md) var(--space-lg);
-            border-bottom: 1px solid var(--border-subtle);
-            display: flex;
-            gap: var(--space-md);
-            align-items: center;
-            flex-wrap: wrap;
-        }
+/* ─── Panels grid ─── */
+.panels-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); margin-bottom:var(--space-lg); }
+.panel { background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); overflow:hidden; }
 
-        .search-input {
-            flex: 1;
-            min-width: 200px;
-            padding: var(--space-sm) var(--space-md);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-md);
-            background: var(--bg-deep);
-            color: var(--text-primary);
-            font-family: var(--font-sans);
-            font-size: 0.875rem;
-            outline: none;
-        }
-        .search-input:focus { border-color: var(--accent-primary); }
+/* ─── SNP table ─── */
+.snp-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+.snp-table th { text-align:left; font-size:0.68rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; padding:var(--space-xs) var(--space-sm); border-bottom:1px solid var(--border-subtle); }
+.snp-table td { padding:var(--space-xs) var(--space-sm); border-bottom:1px solid var(--border-subtle); color:var(--text-primary); font-family:var(--font-mono); font-size:0.8rem; vertical-align:middle; }
+.snp-table tr:last-child td { border-bottom:none; }
+.snp-table .highlight-row td { color:var(--status-damaged); font-weight:600; }
+.snp-pct-bar { display:flex; align-items:center; gap:6px; }
+.snp-mini-track { width:60px; height:5px; background:var(--bg-elevated); border-radius:99px; overflow:hidden; }
+.snp-mini-fill { height:100%; background:var(--damage-5prime); border-radius:99px; }
 
-        .filter-select {
-            padding: var(--space-sm) var(--space-md);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-md);
-            background: var(--bg-deep);
-            color: var(--text-primary);
-            font-family: var(--font-sans);
-            font-size: 0.875rem;
-            outline: none;
-            cursor: pointer;
-        }
+/* ─── FastANI ─── */
+.ani-chart { width:100%; }
+.ani-row { display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-sm); }
+.ani-row:last-child { margin-bottom:0; }
+.ani-label { font-family:var(--font-mono); font-size:0.72rem; color:var(--text-secondary); width:130px; flex-shrink:0; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ani-bar-track { flex:1; height:20px; background:var(--bg-raised); border-radius:var(--radius-sm); overflow:hidden; }
+.ani-bar-fill { height:100%; border-radius:var(--radius-sm); transition:width 0.6s ease; }
+.ani-bar-fill.top { background:linear-gradient(90deg,var(--accent-primary),var(--accent-secondary)); }
+.ani-bar-fill.mid { background:var(--bg-elevated); }
+.ani-value { font-family:var(--font-mono); font-size:0.72rem; color:var(--text-secondary); width:52px; flex-shrink:0; text-align:right; }
+.ani-value.top { color:var(--accent-secondary); font-weight:600; }
 
-        .mags-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-        }
+/* ─── Legend ─── */
+.legend { display:flex; gap:var(--space-lg); flex-wrap:wrap; margin-top:var(--space-sm); }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:0.72rem; color:var(--text-secondary); }
+.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
 
-        .mags-table th {
-            background: var(--bg-raised);
-            padding: var(--space-sm) var(--space-md);
-            text-align: left;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            border-bottom: 1px solid var(--border-default);
-            white-space: nowrap;
-            cursor: pointer;
-            user-select: none;
-        }
-        .mags-table th:hover { color: var(--text-primary); }
-        .mags-table th.sorted { color: var(--accent-primary); }
-        .sort-icon { margin-left: 4px; opacity: 0.5; }
-        .mags-table th.sorted .sort-icon { opacity: 1; }
+/* ─── Tree ─── */
+.tree-container { width:100%; position:relative; }
+#snp-tree svg { display:block; width:100%; }
+.tree-link { fill:none; stroke:var(--border-default); stroke-width:1.5px; }
 
-        .mags-table td {
-            padding: var(--space-sm) var(--space-md);
-            border-bottom: 1px solid var(--border-subtle);
-            color: var(--text-primary);
-            vertical-align: middle;
-        }
+/* ─── Tabs ─── */
+.tab-bar { display:flex; border-bottom:1px solid var(--border-subtle); padding:0 var(--space-lg); }
+.tab { padding:var(--space-md) var(--space-lg); font-size:0.85rem; font-weight:500; color:var(--text-tertiary); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all var(--transition-fast); }
+.tab:hover { color:var(--text-primary); }
+.tab.active { color:var(--accent-secondary); border-bottom-color:var(--accent-primary); }
+.tab-content { display:none; padding:var(--space-lg); }
+.tab-content.active { display:block; }
 
-        .mags-table tr:last-child td { border-bottom: none; }
+/* ─── MAGs table ─── */
+.table-wrapper { background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:var(--space-2xl); }
+.table-controls { padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border-subtle); display:flex; gap:var(--space-md); align-items:center; flex-wrap:wrap; background:var(--bg-raised); }
+.search-input { flex:1; min-width:200px; padding:var(--space-sm) var(--space-md); border:1px solid var(--border-default); border-radius:var(--radius-md); background:var(--bg-base); color:var(--text-primary); font-family:var(--font-sans); font-size:0.875rem; outline:none; }
+.search-input:focus { border-color:var(--accent-primary); }
+.filter-select { padding:var(--space-sm) var(--space-md); border:1px solid var(--border-default); border-radius:var(--radius-md); background:var(--bg-base); color:var(--text-primary); font-family:var(--font-sans); font-size:0.875rem; outline:none; cursor:pointer; }
+.table-count { font-size:0.78rem; color:var(--text-tertiary); font-family:var(--font-mono); margin-left:auto; }
+.mags-table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+.mags-table th { background:var(--bg-raised); padding:9px 14px; text-align:left; font-size:0.68rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px solid var(--border-default); white-space:nowrap; cursor:pointer; user-select:none; }
+.mags-table th:hover { color:var(--text-secondary); }
+.mags-table th.sorted { color:var(--accent-secondary); }
+.sort-icon { margin-left:4px; opacity:0.4; font-size:0.7rem; }
+.mags-table th.sorted .sort-icon { opacity:1; }
+.mags-table td { padding:10px 14px; border-bottom:1px solid var(--border-subtle); color:var(--text-primary); vertical-align:middle; }
+.mags-table tr:last-child td { border-bottom:none; }
+.mags-table tr:hover td { background:var(--bg-raised); }
+.mags-table tr.focal td { background:rgba(201,145,90,0.05); }
+.mags-table tr.focal:hover td { background:rgba(201,145,90,0.09); }
 
-        .mags-table tr:hover td { background: var(--bg-raised); }
+/* Bin cell */
+.bin-cell { display:flex; flex-direction:column; gap:3px; }
+.bin-name { font-family:var(--font-mono); font-weight:600; font-size:0.85rem; color:var(--text-primary); }
+.bin-link { text-decoration:none; color:var(--accent-secondary); }
+.bin-link:hover { text-decoration:underline; }
+.bin-badges { display:flex; gap:4px; align-items:center; }
 
-        .mags-table tr.focal td {
-            background: rgba(201, 145, 90, 0.06);
-        }
-        .mags-table tr.focal:hover td {
-            background: rgba(201, 145, 90, 0.1);
-        }
+/* Quality badges — solid fills like DAMAGED in explorer */
+.badge-hq { font-size:0.63rem; font-weight:700; background:var(--status-damaged); color:#fff; padding:1px 6px; border-radius:3px; letter-spacing:0.03em; }
+.badge-mq { font-size:0.63rem; font-weight:700; background:var(--accent-secondary); color:#fff; padding:1px 6px; border-radius:3px; letter-spacing:0.03em; }
 
-        .bin-name {
-            font-family: var(--font-mono);
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: var(--text-primary);
-        }
-        .bin-link {
-            text-decoration: none;
-            color: var(--accent-secondary);
-        }
-        .bin-link:hover { text-decoration: underline; }
+/* Domain badges */
+.badge-archaea { font-size:0.63rem; font-weight:700; color:var(--damage-model); background:rgba(147,51,234,0.1); border:1px solid rgba(147,51,234,0.2); padding:1px 5px; border-radius:3px; }
+.badge-bacteria { font-size:0.63rem; font-weight:700; color:var(--damage-3prime); background:rgba(74,142,212,0.1); border:1px solid rgba(74,142,212,0.2); padding:1px 5px; border-radius:3px; }
 
-        .quality-hq {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--status-damaged);
-            background: rgba(45, 150, 89, 0.1);
-            padding: 2px 7px;
-            border-radius: 99px;
-        }
-        .quality-mq {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--accent-secondary);
-            background: rgba(201, 145, 90, 0.12);
-            padding: 2px 7px;
-            border-radius: 99px;
-        }
+/* Taxonomy */
+.taxonomy-cell { max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.82rem; color:var(--text-secondary); }
 
-        .badge-ancient {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--damage-5prime);
-            background: rgba(217, 79, 79, 0.1);
-            padding: 2px 7px;
-            border-radius: 99px;
-        }
-        .badge-modern {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--text-tertiary);
-            background: var(--bg-elevated);
-            padding: 2px 7px;
-            border-radius: 99px;
-        }
-        .badge-moderate {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--damage-3prime);
-            background: rgba(74, 142, 212, 0.1);
-            padding: 2px 7px;
-            border-radius: 99px;
-        }
+/* Completeness bar */
+.compl-cell { display:flex; align-items:center; gap:var(--space-sm); }
+.bar-track { flex:1; height:7px; background:var(--bg-elevated); border-radius:99px; overflow:hidden; min-width:50px; }
+.bar-fill { height:100%; border-radius:99px; }
+.bar-fill.hi { background:var(--status-damaged); }
+.bar-fill.lo { background:var(--accent-primary); }
+.bar-value { font-family:var(--font-mono); font-size:0.78rem; color:var(--text-secondary); white-space:nowrap; min-width:40px; text-align:right; }
 
-        .badge-pass {
-            display: inline-flex;
-            align-items: center;
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--patina-green);
-            background: rgba(90, 138, 122, 0.12);
-            padding: 2px 7px;
-            border-radius: 99px;
-        }
-        .badge-fail {
-            display: inline-flex;
-            align-items: center;
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--text-tertiary);
-            background: var(--bg-elevated);
-            padding: 2px 7px;
-            border-radius: 99px;
-        }
+/* Contamination */
+.contam-value { font-family:var(--font-mono); font-size:0.82rem; }
+.contam-low { color:var(--patina-green); }
+.contam-mid { color:var(--accent-secondary); }
+.contam-high { color:var(--damage-5prime); }
 
-        .completeness-bar {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-        }
-        .bar-track {
-            flex: 1;
-            height: 5px;
-            background: var(--bg-elevated);
-            border-radius: 99px;
-            overflow: hidden;
-            min-width: 50px;
-        }
-        .bar-fill {
-            height: 100%;
-            border-radius: 99px;
-            background: var(--accent-primary);
-        }
-        .bar-value {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            min-width: 42px;
-            text-align: right;
-        }
+/* Size + N50 combined */
+.size-cell { line-height:1.3; }
+.size-main { font-family:var(--font-mono); font-size:0.82rem; color:var(--text-primary); }
+.size-sub { font-family:var(--font-mono); font-size:0.7rem; color:var(--text-tertiary); }
 
-        .contam-value {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-        }
-        .contam-low { color: var(--patina-green); }
-        .contam-mid { color: var(--accent-primary); }
-        .contam-high { color: var(--damage-5prime); }
+/* GUNC — plain checkmark/cross */
+.gunc-pass { color:var(--status-damaged); font-weight:700; font-size:0.9rem; }
+.gunc-fail { color:var(--damage-5prime); font-weight:700; font-size:0.9rem; }
 
-        .taxonomy-cell {
-            max-width: 260px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .taxonomy-domain {
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 1px 5px;
-            border-radius: 3px;
-            margin-right: 4px;
-        }
-        .domain-archaea {
-            color: var(--damage-model);
-            background: rgba(147, 51, 234, 0.1);
-        }
-        .domain-bacteria {
-            color: var(--damage-3prime);
-            background: rgba(74, 142, 212, 0.1);
-        }
+/* STATUS badge — solid ANCIENT like DAMAGED in explorer */
+.badge-ancient { display:inline-flex; align-items:center; justify-content:center; background:#8B1A1A; color:#fff; font-size:0.66rem; font-weight:700; padding:3px 8px; border-radius:3px; letter-spacing:0.04em; text-transform:uppercase; white-space:nowrap; }
+.badge-modern-text { color:var(--text-tertiary); font-size:0.72rem; }
 
-        .size-value {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
+/* Download button */
+.download-btn { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:var(--bg-raised); border:1px solid var(--border-default); border-radius:var(--radius-sm); color:var(--text-secondary); text-decoration:none; font-size:0.72rem; font-family:var(--font-mono); transition:all var(--transition-fast); white-space:nowrap; }
+.download-btn:hover { background:var(--bg-elevated); border-color:var(--accent-primary); color:var(--text-primary); }
+.download-btn svg { width:11px; height:11px; }
 
-        .download-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            background: var(--bg-raised);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-sm);
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.75rem;
-            font-family: var(--font-mono);
-            transition: all var(--transition-fast);
-            white-space: nowrap;
-        }
-        .download-btn:hover {
-            background: var(--bg-elevated);
-            border-color: var(--accent-primary);
-            color: var(--text-primary);
-        }
-        .download-btn svg { width: 12px; height: 12px; }
-
-        /* ─── Focal bin_4 section ─── */
-        .focal-section {
-            margin-bottom: var(--space-2xl);
-        }
-
-        .focal-hero {
-            background: var(--bg-base);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl);
-            overflow: hidden;
-            margin-bottom: var(--space-lg);
-        }
-
-        .focal-hero-header {
-            background: linear-gradient(135deg, rgba(201, 145, 90, 0.12) 0%, rgba(147, 51, 234, 0.06) 100%);
-            border-bottom: 1px solid var(--border-subtle);
-            padding: var(--space-xl) var(--space-xl);
-            display: flex;
-            align-items: flex-start;
-            gap: var(--space-xl);
-        }
-
-        .focal-archaea-badge {
-            background: rgba(147, 51, 234, 0.12);
-            border: 1px solid rgba(147, 51, 234, 0.2);
-            border-radius: var(--radius-md);
-            padding: var(--space-sm) var(--space-md);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        .focal-archaea-badge .arch-icon {
-            font-size: 1.5rem;
-            line-height: 1;
-        }
-        .focal-archaea-badge .arch-label {
-            font-size: 0.65rem;
-            font-weight: 600;
-            color: var(--damage-model);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-top: 4px;
-        }
-
-        .focal-hero-text { flex: 1; }
-        .focal-bin-name {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            color: var(--text-tertiary);
-            margin-bottom: var(--space-xs);
-        }
-        .focal-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1.2;
-            margin-bottom: var(--space-sm);
-        }
-        .focal-taxonomy {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            font-style: italic;
-        }
-        .focal-stasis-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(45, 150, 89, 0.1);
-            border: 1px solid rgba(45, 150, 89, 0.25);
-            color: var(--status-damaged);
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 99px;
-            margin-top: var(--space-sm);
-        }
-
-        .focal-stats-row {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            border-top: 1px solid var(--border-subtle);
-        }
-        .focal-stat {
-            padding: var(--space-md) var(--space-lg);
-            border-right: 1px solid var(--border-subtle);
-        }
-        .focal-stat:last-child { border-right: none; }
-        .focal-stat-label {
-            font-size: 0.72rem;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 4px;
-        }
-        .focal-stat-value {
-            font-family: var(--font-mono);
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        .focal-stat-unit {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-            font-weight: 400;
-        }
-
-        /* ─── Genome versions ─── */
-        .genome-versions {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--space-md);
-            margin-bottom: var(--space-lg);
-        }
-        .genome-version-card {
-            background: var(--bg-base);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
-        }
-        .genome-version-card.highlight {
-            border-color: var(--accent-primary);
-        }
-        .gv-tag {
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: var(--space-xs);
-        }
-        .gv-name {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: var(--space-sm);
-        }
-        .gv-desc {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin-bottom: var(--space-md);
-        }
-        .gv-meta {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-            font-family: var(--font-mono);
-            margin-bottom: var(--space-md);
-        }
-        .gv-download {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-sm);
-            padding: var(--space-sm) var(--space-md);
-            background: var(--bg-raised);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            text-decoration: none;
-            font-size: 0.8rem;
-            font-weight: 500;
-            transition: all var(--transition-fast);
-            width: 100%;
-            justify-content: center;
-        }
-        .gv-download:hover {
-            background: var(--bg-elevated);
-            border-color: var(--accent-primary);
-        }
-        .gv-download svg { width: 14px; height: 14px; color: var(--text-tertiary); }
-
-        /* ─── Interactive panels ─── */
-        .interactive-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-lg);
-            margin-bottom: var(--space-lg);
-        }
-
-        .panel {
-            background: var(--bg-base);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-        }
-
-        .panel-header {
-            padding: var(--space-md) var(--space-lg);
-            border-bottom: 1px solid var(--border-subtle);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .panel-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .panel-subtitle {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-        }
-
-        .panel-body {
-            padding: var(--space-lg);
-        }
-
-        /* ─── SNP Tree ─── */
-        .tree-container {
-            width: 100%;
-            position: relative;
-        }
-
-        #snp-tree svg {
-            display: block;
-            width: 100%;
-        }
-
-        .tree-node circle {
-            fill: var(--bg-base);
-            stroke: var(--accent-primary);
-            stroke-width: 1.5px;
-        }
-        .tree-node.leaf circle {
-            fill: var(--accent-muted);
-        }
-        .tree-node.focal circle {
-            fill: var(--damage-model);
-            stroke: var(--damage-model);
-            r: 6;
-        }
-        .tree-node.ancient-ref circle {
-            fill: var(--damage-5prime);
-            stroke: var(--damage-5prime);
-        }
-
-        .tree-label {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            fill: var(--text-secondary);
-        }
-        .tree-label.focal {
-            fill: var(--damage-model);
-            font-weight: 600;
-        }
-        .tree-label.ancient-ref {
-            fill: var(--damage-5prime);
-            font-weight: 600;
-        }
-
-        .tree-link {
-            fill: none;
-            stroke: var(--border-default);
-            stroke-width: 1.5px;
-        }
-
-        .tree-support {
-            font-family: var(--font-mono);
-            font-size: 9px;
-            fill: var(--text-tertiary);
-        }
-
-        /* ─── FastANI chart ─── */
-        .ani-chart {
-            width: 100%;
-        }
-
-        .ani-row {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            margin-bottom: var(--space-sm);
-        }
-        .ani-row:last-child { margin-bottom: 0; }
-
-        .ani-label {
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            color: var(--text-secondary);
-            width: 130px;
-            flex-shrink: 0;
-            text-align: right;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .ani-bar-track {
-            flex: 1;
-            height: 20px;
-            background: var(--bg-raised);
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            position: relative;
-        }
-        .ani-bar-fill {
-            height: 100%;
-            border-radius: var(--radius-sm);
-            transition: width 0.6s ease;
-        }
-        .ani-bar-fill.top { background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); }
-        .ani-bar-fill.mid { background: var(--bg-elevated); }
-        .ani-value {
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            color: var(--text-secondary);
-            width: 52px;
-            flex-shrink: 0;
-            text-align: right;
-        }
-        .ani-value.top { color: var(--accent-secondary); font-weight: 600; }
-
-        /* ─── Damage chart ─── */
-        .damage-profile {
-            width: 100%;
-        }
-
-        #damage-chart svg {
-            display: block;
-            width: 100%;
-        }
-
-        /* ─── SNP counts panel ─── */
-        .snp-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.82rem;
-        }
-        .snp-table th {
-            text-align: left;
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: var(--space-xs) var(--space-sm);
-            border-bottom: 1px solid var(--border-subtle);
-        }
-        .snp-table td {
-            padding: var(--space-xs) var(--space-sm);
-            border-bottom: 1px solid var(--border-subtle);
-            color: var(--text-primary);
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            vertical-align: middle;
-        }
-        .snp-table tr:last-child td { border-bottom: none; }
-        .snp-table .highlight-row td { color: var(--status-damaged); font-weight: 600; }
-
-        .snp-pct-bar {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .snp-mini-track {
-            width: 60px;
-            height: 5px;
-            background: var(--bg-elevated);
-            border-radius: 99px;
-            overflow: hidden;
-        }
-        .snp-mini-fill {
-            height: 100%;
-            background: var(--damage-5prime);
-            border-radius: 99px;
-        }
-
-        /* ─── Full-width tree panel ─── */
-        .full-panel {
-            background: var(--bg-base);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            margin-bottom: var(--space-lg);
-        }
-
-        /* ─── Tabs ─── */
-        .tab-bar {
-            display: flex;
-            border-bottom: 1px solid var(--border-subtle);
-            padding: 0 var(--space-lg);
-        }
-        .tab {
-            padding: var(--space-md) var(--space-lg);
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-tertiary);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -1px;
-            transition: all var(--transition-fast);
-        }
-        .tab:hover { color: var(--text-primary); }
-        .tab.active {
-            color: var(--accent-secondary);
-            border-bottom-color: var(--accent-primary);
-        }
-        .tab-content { display: none; padding: var(--space-lg); }
-        .tab-content.active { display: block; }
-
-        /* ─── Stasis callout ─── */
-        .stasis-callout {
-            background: rgba(45, 150, 89, 0.06);
-            border: 1px solid rgba(45, 150, 89, 0.2);
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
-            margin-bottom: var(--space-lg);
-        }
-        .stasis-callout-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--status-damaged);
-            margin-bottom: var(--space-sm);
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-        }
-        .stasis-callout-body {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* ─── Legend ─── */
-        .legend {
-            display: flex;
-            gap: var(--space-lg);
-            flex-wrap: wrap;
-            margin-top: var(--space-md);
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-        .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-            .summary-cards { grid-template-columns: repeat(2, 1fr); }
-            .genome-versions { grid-template-columns: 1fr; }
-            .interactive-grid { grid-template-columns: 1fr; }
-            .focal-stats-row { grid-template-columns: repeat(3, 1fr); }
-            .focal-hero-header { flex-direction: column; }
-        }
-        @media (max-width: 600px) {
-            .page-main { padding: var(--space-lg); }
-            .summary-cards { grid-template-columns: repeat(2, 1fr); }
-            .focal-stats-row { grid-template-columns: repeat(2, 1fr); }
-        }
+/* Responsive */
+@media (max-width:900px) {
+    .summary-strip { flex-wrap:wrap; }
+    .genome-versions { grid-template-columns:1fr; }
+    .panels-grid { grid-template-columns:1fr; }
+    .focal-stats-row { grid-template-columns:repeat(3,1fr); }
+    .focal-header { flex-direction:column; }
+    .fig-grid { grid-template-columns:1fr; }
+}
+@media (max-width:600px) {
+    .page-main { padding:var(--space-lg); }
+    .focal-stats-row { grid-template-columns:repeat(2,1fr); }
+}
     </style>
 </head>
 <body>
@@ -833,48 +229,48 @@
 
     <main class="page-main">
 
-        <!-- Summary cards -->
-        <div class="summary-cards">
-            <div class="summary-card accent">
-                <div class="summary-card-value">20</div>
-                <div class="summary-card-label">Total HQ+MQ bins</div>
+        <!-- Summary strip -->
+        <div class="summary-strip">
+            <div class="summary-stat">
+                <span class="stat-value accent">20</span>
+                <span class="stat-label">Total bins</span>
             </div>
-            <div class="summary-card">
-                <div class="summary-card-value">11</div>
-                <div class="summary-card-label">High-quality (≥90% / &lt;5%)</div>
+            <div class="summary-stat">
+                <span class="stat-value">11</span>
+                <span class="stat-label">High quality ≥90% / &lt;5%</span>
             </div>
-            <div class="summary-card">
-                <div class="summary-card-value">9</div>
-                <div class="summary-card-label">Medium-quality (≥50%)</div>
+            <div class="summary-stat">
+                <span class="stat-value">9</span>
+                <span class="stat-label">Medium quality ≥50%</span>
             </div>
-            <div class="summary-card">
-                <div class="summary-card-value">18/20</div>
-                <div class="summary-card-label">Passed GUNC</div>
+            <div class="summary-stat">
+                <span class="stat-value">18/20</span>
+                <span class="stat-label">Passed GUNC</span>
             </div>
-        </div>
-        <div style="margin-bottom:var(--space-2xl);">
-            <a href="data/all_mags.zip" download class="gv-download" style="display:inline-flex;max-width:320px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Download all MAGs (all_mags.zip · 13 MB)
-            </a>
+            <div class="summary-stat dl-stat">
+                <a href="data/all_mags.zip" download class="dl-all-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download all MAGs (all_mags.zip · 13 MB)
+                </a>
+            </div>
         </div>
 
         <!-- ─── bin_4 Focal section ─── -->
-        <div class="focal-section">
+        <div class="focal-section" id="focal-section">
             <div class="section-title">Focal MAG</div>
 
-            <div class="focal-hero">
-                <div class="focal-hero-header">
-                    <div class="focal-archaea-badge">
-                        <div class="arch-icon">🧬</div>
-                        <div class="arch-label">Archaea</div>
+            <div class="focal-card">
+                <div class="focal-header">
+                    <div class="focal-domain-badge archaea">
+                        Ar
+                        <span class="focal-domain-label">Archaea</span>
                     </div>
-                    <div class="focal-hero-text">
-                        <div class="focal-bin-name">bin_4</div>
-                        <div class="focal-title">Methanoflorentales</div>
+                    <div class="focal-info">
+                        <div class="focal-bin-id">bin_4</div>
+                        <div class="focal-organism">Methanoflorentales</div>
                         <div class="focal-taxonomy">d__Archaea · p__Halobacteriota · c__Bog-38 · o__Bog-38</div>
                         <div class="focal-stasis-badge">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                             Evolutionary stasis — 2,579 non-damage SNPs (KapK-anc vs KapK-mod) · 99.42% ANI · 82–244× rate suppression
                         </div>
                     </div>
@@ -920,7 +316,7 @@
                         bin_4.fa.gz
                     </a>
                 </div>
-                <div class="genome-version-card highlight">
+                <div class="genome-version-card anc">
                     <div class="gv-tag">kapk_anc</div>
                     <div class="gv-name">Ancient consensus</div>
                     <div class="gv-desc">Reads with p<sub>ancient</sub> &gt; 0.8. The ~2 Ma archaeal genome. C→T at 5′ pos1 = 37.2%, G→A at 3′ pos1 = 37.5%.</div>
@@ -954,16 +350,16 @@
             </div>
 
             <!-- ── Paper figure panels (A / B / C) ── -->
-            <div class="full-panel" style="margin-bottom:var(--space-lg);">
+            <div class="full-panel">
                 <div class="panel-header">
                     <div class="panel-title">Figure — Evolutionary stasis evidence (bin_4 Methanoflorentales)</div>
                     <div class="panel-subtitle">Replicates paper Figure 7</div>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1.2fr; border-top:1px solid var(--border-subtle);">
+                <div class="fig-grid">
 
                     <!-- Panel A: smiley plot -->
-                    <div style="padding:var(--space-lg); border-right:1px solid var(--border-subtle);">
-                        <div style="font-size:0.72rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:var(--space-sm);">A &nbsp;·&nbsp; Damage profile (smiley)</div>
+                    <div class="fig-panel">
+                        <div class="fig-label">A &nbsp;·&nbsp; Damage profile (smiley)</div>
                         <div id="smiley-plot"></div>
                         <div class="legend" style="margin-top:var(--space-sm);">
                             <div class="legend-item"><div class="legend-dot" style="background:#A63820"></div>KapK-anc</div>
@@ -973,8 +369,8 @@
                     </div>
 
                     <!-- Panel B: fragment lengths -->
-                    <div style="padding:var(--space-lg); border-right:1px solid var(--border-subtle);">
-                        <div style="font-size:0.72rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:var(--space-sm);">B &nbsp;·&nbsp; Fragment length distribution</div>
+                    <div class="fig-panel">
+                        <div class="fig-label">B &nbsp;·&nbsp; Fragment length distribution</div>
                         <div id="frag-plot"></div>
                         <div class="legend" style="margin-top:var(--space-sm);">
                             <div class="legend-item"><div class="legend-dot" style="background:#A63820"></div>KapK-anc (5.5M)</div>
@@ -984,10 +380,10 @@
                     </div>
 
                     <!-- Panel C: SNP tree -->
-                    <div style="padding:var(--space-lg);">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);">
-                            <div style="font-size:0.72rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.06em;">C &nbsp;·&nbsp; Codon ML tree · 7 focal taxa</div>
-                            <a href="tree.html" target="_blank" style="font-size:0.72rem;color:var(--accent-secondary);text-decoration:none;display:flex;align-items:center;gap:3px;">
+                    <div class="fig-panel">
+                        <div class="fig-label">
+                            C &nbsp;·&nbsp; Codon ML tree · 7 focal taxa
+                            <a href="tree.html" target="_blank" style="font-size:0.72rem;color:var(--accent-secondary);text-decoration:none;display:flex;align-items:center;gap:3px;font-weight:400;text-transform:none;letter-spacing:0;">
                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                                 Full 79-taxon interactive tree →
                             </a>
@@ -1008,7 +404,7 @@
             </div>
 
             <!-- SNP counts + FastANI -->
-            <div class="interactive-grid">
+            <div class="panels-grid">
                 <!-- SNP counts -->
                 <div class="panel">
                     <div class="panel-header">
@@ -1083,21 +479,19 @@
                     <option value="Archaea">Archaea</option>
                     <option value="Bacteria">Bacteria</option>
                 </select>
+                <span class="table-count" id="table-count">20 bins</span>
             </div>
             <div style="overflow-x:auto;">
                 <table class="mags-table" id="mags-table">
                     <thead>
                         <tr>
                             <th data-col="bin">Bin <span class="sort-icon">↕</span></th>
-                            <th data-col="quality">Quality <span class="sort-icon">↕</span></th>
                             <th data-col="taxonomy">Taxonomy</th>
                             <th data-col="completeness">Compl. <span class="sort-icon">↕</span></th>
                             <th data-col="contamination">Contam. <span class="sort-icon">↕</span></th>
-                            <th data-col="size">Size <span class="sort-icon">↕</span></th>
-                            <th data-col="n50">N50 <span class="sort-icon">↕</span></th>
-                            <th data-col="gc">GC% <span class="sort-icon">↕</span></th>
+                            <th data-col="size">Size · N50 <span class="sort-icon">↕</span></th>
                             <th data-col="gunc">GUNC</th>
-                            <th data-col="damage">Damage</th>
+                            <th data-col="damage">Status <span class="sort-icon">↕</span></th>
                             <th>Smiley</th>
                             <th>FASTA</th>
                         </tr>
@@ -1216,12 +610,12 @@
     const SNP_TREE = "((((GCA054338395:0.03780,GCA054338475:0.00061)95.2/100:0.00167,(SOIL100000032:0.04342,(ancient_consensus:0.00000,s17_ancient_relative:0.00340)94.9/99:0.00134)86.1/100:0.00100)98.6/100:0.04549,NAY3300025461b7:0.00083)100/97:0.00997,GCA963719035:0.02912)100/100:1.40392;";
 
     // ────────────────────────────────────────────────────────
-    // Mini smiley sparkline (inline SVG, 80×32px)
+    // Mini smiley sparkline (inline SVG, 90×36px)
     // ────────────────────────────────────────────────────────
     function makeSmileySparkline(binName) {
         const d = BIN_SMILEY[binName];
         if (!d) return "";
-        const W = 80, H = 32;
+        const W = 90, H = 36;
         const N = d.ct.length; // 15 positions
         // Build full smiley: 5' reversed (pos15→pos1) + 3' forward (pos1→pos15)
         const pts = [];
@@ -1285,44 +679,57 @@
         filterData.sort((a, b) => {
             let av = a[sortCol], bv = b[sortCol];
             if (sortCol === "quality") { av = isHQ(a) ? 1 : 0; bv = isHQ(b) ? 1 : 0; }
+            if (sortCol === "gunc") { av = a.gunc_pass ? 1 : 0; bv = b.gunc_pass ? 1 : 0; }
             if (typeof av === "string") return av.localeCompare(bv) * sortDir;
             return (av - bv) * sortDir;
         });
 
+        const countEl = document.getElementById("table-count");
+        if (countEl) countEl.textContent = `${filterData.length} bin${filterData.length !== 1 ? 's' : ''}`;
+
         const tbody = document.getElementById("mags-tbody");
         tbody.innerHTML = filterData.map(b => {
             const hq = isHQ(b);
-            const dom = getDomain(b.taxonomy);
+            const domain = getDomain(b.taxonomy);
             const taxShort = getTaxShort(b.taxonomy);
             const contamClass = b.contamination < 2 ? "contam-low" : b.contamination < 5 ? "contam-mid" : "contam-high";
             const sizeMbp = (b.size / 1e6).toFixed(2);
             const n50k = b.n50 >= 1000 ? (b.n50/1000).toFixed(0)+"k" : b.n50;
+            const complHi = b.completeness >= 90;
 
             return `<tr class="${b.focal ? 'focal' : ''}">
-                <td><span class="bin-name">${b.focal ? `<a href="#focal-section" class="bin-link">★ ${b.bin}</a>` : b.bin}</span></td>
-                <td>${hq ? '<span class="quality-hq">HQ</span>' : '<span class="quality-mq">MQ</span>'}</td>
-                <td class="taxonomy-cell" title="${b.taxonomy}">
-                    <span class="taxonomy-domain ${dom === 'Archaea' ? 'domain-archaea' : 'domain-bacteria'}">${dom === 'Archaea' ? 'Ar' : 'Ba'}</span>${taxShort}
-                </td>
                 <td>
-                    <div class="completeness-bar">
-                        <div class="bar-track"><div class="bar-fill" style="width:${b.completeness}%"></div></div>
+                    <div class="bin-cell">
+                        <span class="bin-name">${b.focal
+                            ? `<a href="#focal-section" class="bin-link">★ ${b.bin}</a>`
+                            : b.bin}</span>
+                        <div class="bin-badges">
+                            ${hq ? '<span class="badge-hq">HQ</span>' : '<span class="badge-mq">MQ</span>'}
+                            ${domain === 'Archaea' ? '<span class="badge-archaea">Ar</span>' : '<span class="badge-bacteria">Ba</span>'}
+                        </div>
+                    </div>
+                </td>
+                <td class="taxonomy-cell" title="${b.taxonomy}">${taxShort}</td>
+                <td>
+                    <div class="compl-cell">
+                        <div class="bar-track"><div class="bar-fill ${complHi ? 'hi' : 'lo'}" style="width:${b.completeness}%"></div></div>
                         <div class="bar-value">${b.completeness.toFixed(1)}%</div>
                     </div>
                 </td>
                 <td><span class="contam-value ${contamClass}">${b.contamination.toFixed(2)}%</span></td>
-                <td><span class="size-value">${sizeMbp} Mbp</span></td>
-                <td><span class="size-value">${n50k}</span></td>
-                <td><span class="size-value">${(b.gc * 100).toFixed(0)}%</span></td>
-                <td>${b.gunc_pass
-                    ? `<span class="badge-pass" title="${b.gunc_level}">✓ pass</span>`
-                    : `<span class="badge-fail" title="${b.gunc_level}">✗ fail</span>`}
+                <td>
+                    <div class="size-cell">
+                        <div class="size-main">${sizeMbp} Mbp</div>
+                        <div class="size-sub">N50 ${n50k}</div>
+                    </div>
                 </td>
-                <td>${b.damage === 'ancient'
-                    ? '<span class="badge-ancient">▲ ancient</span>'
-                    : b.damage === 'moderate'
-                    ? '<span class="badge-moderate">● moderate</span>'
-                    : '<span class="badge-modern">● modern</span>'}
+                <td title="GUNC level: ${b.gunc_level}">
+                    ${b.gunc_pass ? '<span class="gunc-pass">✓</span>' : '<span class="gunc-fail">✗</span>'}
+                </td>
+                <td>
+                    ${b.damage === 'ancient'
+                        ? '<span class="badge-ancient">Ancient</span>'
+                        : '<span class="badge-modern-text">modern</span>'}
                 </td>
                 <td style="line-height:0;" title="5′→[interior]→3′ damage profile">
                     ${makeSmileySparkline(b.bin)}
@@ -1330,7 +737,7 @@
                 <td>
                     <a href="data/${b.file}" download class="download-btn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        .fa.gz
+                        ${b.file}
                     </a>
                 </td>
             </tr>`;
